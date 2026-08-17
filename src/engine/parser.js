@@ -222,10 +222,11 @@ export class TimetableParser {
       branch,
       enrolledSeats: enrolled,
       availableSeats: available,
-      isFull: enrolled >= available && available > 0,
+      isFull: available <= 0,
       days,
       rawDays: { su: suStr, mo: moStr, tu: tuStr, we: weStr, th: thStr }
     };
+
 
   }
 

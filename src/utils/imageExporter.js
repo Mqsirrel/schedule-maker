@@ -13,19 +13,25 @@ export class ImageExporter {
     try {
       // Calculate high DPI scale (2x for retina quality)
       const scale = 2;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const bgColor = isDark ? '#171a23' : '#ffffff';
+
       const dataUrl = await toPng(elementToCapture, {
         quality: 0.95,
         pixelRatio: scale,
         cacheBust: true,
+        backgroundColor: bgColor,
         style: {
           transform: 'none',
-          borderRadius: '16px'
+          borderRadius: '16px',
+          padding: '1.25rem'
         },
         filter: (node) => {
           // Filter out unwanted UI overlays if any
           return !node.classList?.contains('no-export');
         }
       });
+
 
       const downloadLink = document.createElement('a');
       downloadLink.download = filename;

@@ -74,18 +74,28 @@ export class CourseSelector {
       return;
     }
 
+    const currentCode = this.inputCode?.value.trim().toUpperCase() || '';
+    const currentNumber = this.inputNumber?.value.trim() || '';
+
     const uniqueCodes = new Set();
     const uniqueNumbers = new Set();
     const uniqueSections = new Set();
 
     for (const sec of this.allSections) {
       if (sec.courseCode) uniqueCodes.add(sec.courseCode);
-      if (sec.courseNumber) uniqueNumbers.add(sec.courseNumber);
-      if (sec.section) uniqueSections.add(sec.section);
+
+      if (!currentCode || sec.courseCode.toUpperCase() === currentCode) {
+        if (sec.courseNumber) uniqueNumbers.add(sec.courseNumber);
+      }
+
+      if ((!currentCode || sec.courseCode.toUpperCase() === currentCode) &&
+          (!currentNumber || sec.courseNumber === currentNumber)) {
+        if (sec.section) uniqueSections.add(sec.section);
+      }
     }
 
     this.listCodes.innerHTML = Array.from(uniqueCodes).sort().map(c => `<option value="${c}">`).join('');
-    this.listNumbers.innerHTML = Array.from(uniqueNumbers).sort().map(n => `<option value="${n}">`).join('');
+    this.listNumbers.innerHTML = Array.from(uniqueNumbers).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map(n => `<option value="${n}">`).join('');
     this.listSections.innerHTML = Array.from(uniqueSections).sort().map(s => `<option value="${s}">`).join('');
   }
 
@@ -93,6 +103,8 @@ export class CourseSelector {
     const code = this.inputCode.value.trim().toUpperCase();
     const number = this.inputNumber.value.trim();
     const sectionPrefix = this.inputSection.value.trim().toUpperCase();
+
+    this._populateDatalists();
 
     if (!code && !number) {
       this._hidePreview();
@@ -116,6 +128,7 @@ export class CourseSelector {
       this._hidePreview();
     }
   }
+
 
   _hidePreview() {
     this.previewBox.hidden = true;
