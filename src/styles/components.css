@@ -496,7 +496,21 @@ html[dir="ltr"] .input-search {
   font-family: var(--font-mono);
 }
 
+.kbd-nav-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .kbd-nav-hint {
+    display: none;
+  }
+}
+
 /* Schedule Stats */
+
 .schedule-stats {
   display: flex;
   align-items: center;

@@ -36,11 +36,15 @@
   </script>
 </head>
 <body>
+  <!-- Skip to content for keyboard accessibility -->
+  <a href="#mainWorkspace" class="skip-to-content" data-i18n="skip_to_content">تخطي إلى المحتوى الرئيسي</a>
+
   <!-- Taste Skill Noise Overlay -->
   <div class="noise-overlay" aria-hidden="true"></div>
 
   <!-- Header / Navbar -->
   <header class="app-header">
+
 
     <div class="header-container">
       <div class="brand-group">
@@ -303,7 +307,11 @@
                   <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
               </button>
+              <div class="kbd-nav-hint" aria-hidden="true" title="مفاتيح الأسهم للتنقل">
+                <kbd>←</kbd><kbd>→</kbd>
+              </div>
             </div>
+
 
             <!-- Schedule Metrics Badges -->
             <div class="schedule-stats" id="scheduleStats">
