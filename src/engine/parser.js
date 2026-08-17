@@ -140,6 +140,16 @@ export class TimetableParser {
   static _normalizeRowToSection(cells, index) {
     if (cells.length < 10) return null;
 
+    // Check if this row is a header row
+    const firstCell = String(cells[0] || '').trim();
+    const secondCell = String(cells[1] || '').trim();
+    const nameCell = String(cells[9] || cells[0] || '').trim();
+    const codeCell = String(cells[11] || cells[10] || '').trim();
+
+    if (firstCell === 'المسجل' || secondCell === 'المتاح' || nameCell === 'اسم المادة' || codeCell.includes('رمز المادة')) {
+      return null; // Skip table header row
+    }
+
     let enrolled = 0;
     let available = 0;
     let thStr = '', weStr = '', tuStr = '', moStr = '', suStr = '';
@@ -159,7 +169,7 @@ export class TimetableParser {
       tuStr = cells[4] || '';
       moStr = cells[5] || '';
       suStr = cells[6] || '';
-      teacher = cells[7] || 'غير محدد';
+      teacher = cells[7] || '';
       section = cells[8] || '1';
       subjectName = cells[9] || 'مادة بدون اسم';
       subjectNum = cells[10] || '';
@@ -167,7 +177,7 @@ export class TimetableParser {
       branch = cells[12] || '';
       rowId = cells[13] || String(index);
     } else {
-      teacher = cells[1] || 'غير محدد';
+      teacher = cells[1] || '';
       subjectName = cells[0] || 'مادة';
       section = cells[2] || '1';
       suStr = cells[3] || '';
@@ -177,13 +187,18 @@ export class TimetableParser {
       thStr = cells[7] || '';
     }
 
-    subjectCode = subjectCode.trim().toUpperCase();
-    subjectNum = subjectNum.trim();
-    section = section.trim().toUpperCase();
-    subjectName = subjectName.trim();
-    teacher = teacher.trim();
+    // Clean up strings and HTML entities
+    const cleanStr = (s) => (s || '').replace(/&nbsp;/gi, ' ').replace(/<[^>]+>/g, '').trim();
+
+    subjectCode = cleanStr(subjectCode).toUpperCase();
+    subjectNum = cleanStr(subjectNum);
+    section = cleanStr(section).toUpperCase();
+    subjectName = cleanStr(subjectName);
+    teacher = cleanStr(teacher) || 'غير محدد';
+    branch = cleanStr(branch);
 
     if (!subjectCode && !subjectNum && !subjectName) return null;
+
 
     const courseKey = `${subjectCode}-${subjectNum}`.replace(/^-|-$/, '') || subjectName;
 
