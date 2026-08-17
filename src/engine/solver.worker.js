@@ -1,29 +1,39 @@
 // Web Worker for DFS Backtracking Schedule Generator
 import { DAYS, doSlotsOverlap, calculateDayGaps } from './time.js';
+import { deduplicateSchedules, rankSchedules, sectionIdentity } from './scheduleUtils.js';
+
+let cancelled = false;
 
 if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
   self.onmessage = function (e) {
+    if (e.data?.type === 'cancel') {
+      cancelled = true;
+      return;
+    }
+
     const { courseGroups, options } = e.data;
+    cancelled = false;
     try {
       const results = generateSchedulesDFS(courseGroups, options);
-      self.postMessage({ success: true, schedules: results });
+      if (!cancelled) self.postMessage({ success: true, schedules: results });
     } catch (err) {
-      self.postMessage({ success: false, error: err.message });
+      if (!cancelled) self.postMessage({ success: false, error: err.message });
     }
   };
 }
 
 /**
- * Depth-First Search with early conflict pruning.
- * Groups with fewer viable sections are explored first so impossible branches
- * fail earlier. Results are ranked after generation; UI filtering stays local.
+ * Exhaustively explores valid combinations while retaining only the best K
+ * candidates. This avoids the old correctness bug where the first K DFS hits
+ * were ranked and presented as if they were globally the best schedules.
  */
 export function generateSchedulesDFS(courseGroups, options = {}) {
   const {
     allowFullSeats = false,
     maxResults = 1000,
     lockedSections = [],
-    excludedSections = []
+    excludedSections = [],
+    rankingWeights
   } = options;
 
   if (!courseGroups || courseGroups.length === 0) return [];
@@ -31,18 +41,23 @@ export function generateSchedulesDFS(courseGroups, options = {}) {
   const locked = new Set(lockedSections.map(sectionIdentity));
   const excluded = new Set(excludedSections.map(sectionIdentity));
 
+  // A lock is a hard constraint: every locked section must exist in the input
+  // and its course group must contain that exact section.
+  for (const lockedSection of lockedSections) {
+    if (!courseGroups.some(group => group.some(section => sectionIdentity(section) === sectionIdentity(lockedSection)))) {
+      return [];
+    }
+  }
+
   const filteredGroups = courseGroups.map(group => {
     let candidates = group.filter(section => !excluded.has(sectionIdentity(section)));
 
-    if (locked.size > 0) {
-      const lockedForGroup = candidates.filter(section => locked.has(sectionIdentity(section)));
-      if (lockedForGroup.length > 0) candidates = lockedForGroup;
-    }
+    const lockedForGroup = candidates.filter(section => locked.has(sectionIdentity(section)));
+    if (lockedForGroup.length > 0) candidates = lockedForGroup;
 
     if (!allowFullSeats) {
       const availableOnly = candidates.filter(sec => !sec.isFull);
-      // Preserve the existing behavior: if every section is full, keep the
-      // group usable rather than returning no schedules unexpectedly.
+      // Keep full sections as a fallback when they are the only options.
       if (availableOnly.length > 0) candidates = availableOnly;
     }
 
@@ -51,96 +66,79 @@ export function generateSchedulesDFS(courseGroups, options = {}) {
 
   if (filteredGroups.some(group => group.length === 0)) return [];
 
-  // Explore the most constrained course first. This can reduce the search
-  // tree dramatically without changing which schedules are valid.
   const orderedGroups = filteredGroups
     .map((group, originalIndex) => ({ group, originalIndex }))
     .sort((a, b) => a.group.length - b.group.length);
 
-  const validSchedules = [];
+  const candidates = [];
   const currentAssignment = [];
 
+  function consider(schedule) {
+    candidates.push(schedule);
+    // Avoid unbounded memory while still exploring every valid combination.
+    // Absolute ranking makes it possible to safely discard the current worst.
+    candidates.sort((a, b) => b.score - a.score);
+    if (candidates.length > maxResults) candidates.pop();
+  }
+
   function backtrack(groupIndex) {
-    if (validSchedules.length >= maxResults) return;
+    if (cancelled) return;
 
     if (groupIndex === orderedGroups.length) {
-      validSchedules.push({
-        id: `sched_${validSchedules.length + 1}`,
+      const schedule = {
         sections: [...currentAssignment],
         metrics: computeScheduleMetrics(currentAssignment)
-      });
+      };
+      // Rank once here using deterministic absolute metrics. Final rank is
+      // recalculated after deduplication.
+      schedule.score = calculateAbsoluteScore(schedule.metrics, rankingWeights);
+      consider(schedule);
       return;
     }
 
     const currentGroup = orderedGroups[groupIndex].group;
     for (const section of currentGroup) {
+      if (cancelled) return;
       if (hasConflictWithAssignment(section, currentAssignment)) continue;
 
       currentAssignment.push(section);
       backtrack(groupIndex + 1);
       currentAssignment.pop();
-
-      if (validSchedules.length >= maxResults) return;
     }
   }
 
   backtrack(0);
-  return rankSchedules(validSchedules);
-}
+  if (cancelled) return [];
 
-function sectionIdentity(section) {
-  return `${section.courseKey || ''}::${section.section || ''}`;
+  return rankSchedules(deduplicateSchedules(candidates), rankingWeights);
 }
 
 /**
- * Rank schedules using practical student-facing criteria.
- * The score is relative to the generated result set, so it adapts to each
- * semester instead of pretending that one fixed score fits every timetable.
+ * Absolute score: unlike relative min/max normalization, this score remains
+ * meaningful even when only a bounded top-K set is retained during search.
  */
-function rankSchedules(schedules) {
-  if (schedules.length <= 1) {
-    if (schedules[0]) {
-      schedules[0].score = 100;
-      schedules[0].rank = 1;
-    }
-    return schedules;
-  }
+export function calculateAbsoluteScore(metrics, weights = {}) {
+  const {
+    daysOff = 0.35,
+    gaps = 0.30,
+    latestStart = 0.10,
+    earliestFinish = 0.10,
+    seats = 0.15
+  } = weights;
 
-  const range = (getter, value, invert = false) => {
-    const values = schedules.map(getter);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    if (max === min) return 1;
-    const normalized = (value - min) / (max - min);
-    return invert ? 1 - normalized : normalized;
-  };
+  const daysScore = Math.min(metrics.daysOffCount / 5, 1);
+  const gapsScore = 1 - Math.min(metrics.totalGapMinutes / 600, 1);
+  const latestStartScore = Math.min(metrics.earliestStartMinutes / (12 * 60), 1);
+  const earliestFinishScore = 1 - Math.min(metrics.latestEndMinutes / (22 * 60), 1);
+  const seatsScore = Math.min(metrics.availableSeats / 30, 1);
 
-  for (const schedule of schedules) {
-    const m = schedule.metrics;
-    const daysScore = range(s => s.metrics.daysOffCount, m.daysOffCount);
-    const gapsScore = range(s => s.metrics.totalGapMinutes, m.totalGapMinutes, true);
-    const startScore = range(s => s.metrics.earliestStartMinutes, m.earliestStartMinutes);
-    const finishScore = range(s => s.metrics.latestEndMinutes, m.latestEndMinutes, true);
-    const seatsScore = range(s => s.metrics.availableSeats, m.availableSeats);
-
-    const raw = (
-      daysScore * 0.35 +
-      gapsScore * 0.30 +
-      startScore * 0.10 +
-      finishScore * 0.10 +
-      seatsScore * 0.15
-    );
-
-    schedule.score = Math.round(raw * 100);
-  }
-
-  schedules.sort((a, b) => b.score - a.score);
-  schedules.forEach((schedule, index) => {
-    schedule.rank = index + 1;
-    schedule.id = `sched_${index + 1}`;
-  });
-
-  return schedules;
+  return (
+    daysScore * daysOff +
+    gapsScore * gaps +
+    latestStartScore * latestStart +
+    earliestFinishScore * earliestFinish +
+    seatsScore * seats
+  ) * 100;
 }
 
 function hasConflictWithAssignment(candidateSection, assignedSections) {
@@ -148,7 +146,6 @@ function hasConflictWithAssignment(candidateSection, assignedSections) {
     for (const day of DAYS) {
       const candidateSlots = candidateSection.days[day] || [];
       const assignedSlots = assigned.days[day] || [];
-
       for (const slotC of candidateSlots) {
         for (const slotA of assignedSlots) {
           if (doSlotsOverlap(slotC, slotA)) return true;
@@ -159,9 +156,6 @@ function hasConflictWithAssignment(candidateSection, assignedSections) {
   return false;
 }
 
-/**
- * Calculates deterministic metrics for UI, filtering and ranking.
- */
 export function computeScheduleMetrics(sections) {
   let daysOffCount = 0;
   const activeDays = [];
@@ -187,7 +181,7 @@ export function computeScheduleMetrics(sections) {
         daySlots.push(slot);
         if (slot.startMinutes < earliestStart) earliestStart = slot.startMinutes;
         if (slot.endMinutes > latestEnd) latestEnd = slot.endMinutes;
-        totalStudyMinutes += (slot.endMinutes - slot.startMinutes);
+        totalStudyMinutes += slot.endMinutes - slot.startMinutes;
       }
     }
 
