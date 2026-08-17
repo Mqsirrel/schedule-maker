@@ -12,11 +12,11 @@ const section = (courseKey, sectionNumber, sundaySlots, availableSeats = 10) => 
   isFull: availableSeats === 0,
   availableSeats,
   days: {
-    Sunday: sundaySlots,
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: []
+    su: sundaySlots,
+    mo: [],
+    tu: [],
+    we: [],
+    th: []
   }
 });
 
