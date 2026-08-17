@@ -1,16 +1,13 @@
-/* Taste Skill v2 Anti-Slop Design System & Theme Tokens */
+/* Taste Skill v2 / ScheduleMaker visual tokens */
 :root {
-  /* Typography */
   --font-primary: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-latin: 'Outfit', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
 
-  /* Transitions */
   --transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Shape Consistency Lock (12px / 16px unified radius system) */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -18,99 +15,108 @@
   --radius-xl: 20px;
   --radius-pill: 9999px;
 
-  /* Course Block Palette (Harmonious, high contrast, non-clashing) */
-  --course-color-1: #3b82f6; /* Electric Blue */
-  --course-color-2: #10b981; /* Emerald */
-  --course-color-3: #f59e0b; /* Amber */
-  --course-color-4: #8b5cf6; /* Violet */
-  --course-color-5: #ec4899; /* Pink */
-  --course-color-6: #06b6d4; /* Cyan */
-  --course-color-7: #f97316; /* Orange */
-  --course-color-8: #14b8a6; /* Teal */
-  --course-color-9: #6366f1; /* Indigo */
-  --course-color-10: #84cc16; /* Lime */
+  /* Course colors are deliberately quieter than the primary action color. */
+  --course-color-1: #4f86d9;
+  --course-color-2: #39a879;
+  --course-color-3: #c99028;
+  --course-color-4: #8069b8;
+  --course-color-5: #c86d8f;
+  --course-color-6: #3d9eaf;
+  --course-color-7: #cf7650;
+  --course-color-8: #439b91;
+  --course-color-9: #6e78bd;
+  --course-color-10: #7ca64b;
 }
 
-/* Dark Theme (Taste Skill Off-Black) */
+/* Dark: deep ink rather than pure black, with a restrained warm action color. */
 html[data-theme="dark"] {
-  --color-bg-base: #0c0d10;
-  --color-bg-surface: #14161d;
-  --color-bg-surface-hover: #1c1f28;
-  --color-bg-elevated: #222632;
-  --color-bg-glass: rgba(20, 22, 29, 0.88);
+  --color-bg-base: #10110f;
+  --color-bg-surface: #171815;
+  --color-bg-surface-hover: #1f211d;
+  --color-bg-elevated: #262923;
+  --color-bg-glass: rgba(16, 17, 15, 0.90);
 
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-hover: rgba(255, 255, 255, 0.16);
-  --color-border-active: rgba(255, 107, 0, 0.5);
+  --color-border: rgba(244, 241, 232, 0.085);
+  --color-border-hover: rgba(244, 241, 232, 0.16);
+  --color-border-active: rgba(232, 111, 65, 0.55);
 
-  --color-text-primary: #f5f5f7;
-  --color-text-secondary: #9ea3b0;
-  --color-text-muted: #626875;
-  --color-text-inverse: #0c0d10;
+  --color-text-primary: #f3f0e9;
+  --color-text-secondary: #b1afa7;
+  --color-text-muted: #77766f;
+  --color-text-inverse: #10110f;
 
-  /* Single high-contrast accent: Taste Skill Warm Orange */
-  --color-primary: #ff6b00;
-  --color-primary-hover: #e05e00;
-  --color-primary-subtle: rgba(255, 107, 0, 0.12);
+  --color-primary: #e86f41;
+  --color-primary-hover: #f07b4d;
+  --color-primary-subtle: rgba(232, 111, 65, 0.12);
+  --color-accent: #e86f41;
+  --color-accent-hover: #f07b4d;
 
-  --color-accent: #ff6b00;
-  --color-accent-hover: #e05e00;
+  --color-success: #51a879;
+  --color-success-subtle: rgba(81, 168, 121, 0.13);
+  --color-warning: #c9943c;
+  --color-warning-subtle: rgba(201, 148, 60, 0.13);
+  --color-danger: #d6655c;
+  --color-danger-subtle: rgba(214, 101, 92, 0.13);
 
-  --color-success: #10b981;
-  --color-success-subtle: rgba(16, 185, 129, 0.12);
-  --color-warning: #f59e0b;
-  --color-warning-subtle: rgba(245, 158, 11, 0.12);
-  --color-danger: #ef4444;
-  --color-danger-subtle: rgba(239, 68, 68, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --shadow-xl: 0 28px 60px rgba(0, 0, 0, 0.34);
+  --shadow-button: 0 12px 28px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.08);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.65);
-  --shadow-button: 0 14px 32px -8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-
-  --grid-line-color: rgba(255, 255, 255, 0.05);
-  --grid-hour-bg: rgba(255, 255, 255, 0.015);
+  --grid-line-color: rgba(244, 241, 232, 0.055);
+  --grid-hour-bg: rgba(244, 241, 232, 0.014);
 }
 
-/* Light Theme (Taste Skill Off-White) */
+/* Light: warm paper instead of sterile white. */
 html[data-theme="light"] {
-  --color-bg-base: #f5f4f2;
-  --color-bg-surface: #ffffff;
-  --color-bg-surface-hover: #eae8e3;
+  --color-bg-base: #f3f0e8;
+  --color-bg-surface: #fcfbf7;
+  --color-bg-surface-hover: #eeebe2;
   --color-bg-elevated: #ffffff;
-  --color-bg-glass: rgba(245, 244, 242, 0.88);
+  --color-bg-glass: rgba(243, 240, 232, 0.92);
 
-  --color-border: rgba(15, 15, 15, 0.08);
-  --color-border-hover: rgba(15, 15, 15, 0.16);
-  --color-border-active: rgba(255, 107, 0, 0.6);
+  --color-border: rgba(27, 27, 24, 0.095);
+  --color-border-hover: rgba(27, 27, 24, 0.17);
+  --color-border-active: rgba(190, 74, 42, 0.55);
 
-  --color-text-primary: #0a0a0a;
-  --color-text-secondary: #525252;
-  --color-text-muted: #8a8a8a;
+  --color-text-primary: #1b1c18;
+  --color-text-secondary: #5f6059;
+  --color-text-muted: #8c8a81;
   --color-text-inverse: #ffffff;
 
-  /* Single high-contrast accent: Taste Skill Warm Orange */
-  --color-primary: #ff6b00;
-  --color-primary-hover: #e05e00;
-  --color-primary-subtle: rgba(255, 107, 0, 0.08);
+  --color-primary: #bd4b2e;
+  --color-primary-hover: #a93f25;
+  --color-primary-subtle: rgba(189, 75, 46, 0.085);
+  --color-accent: #bd4b2e;
+  --color-accent-hover: #a93f25;
 
-  --color-accent: #ff6b00;
-  --color-accent-hover: #e05e00;
+  --color-success: #347b57;
+  --color-success-subtle: rgba(52, 123, 87, 0.085);
+  --color-warning: #9a6b20;
+  --color-warning-subtle: rgba(154, 107, 32, 0.085);
+  --color-danger: #b54d45;
+  --color-danger-subtle: rgba(181, 77, 69, 0.085);
 
-  --color-success: #059669;
-  --color-success-subtle: rgba(5, 150, 105, 0.08);
-  --color-warning: #d97706;
-  --color-warning-subtle: rgba(217, 119, 6, 0.08);
-  --color-danger: #dc2626;
-  --color-danger-subtle: rgba(220, 38, 38, 0.08);
+  --shadow-sm: 0 1px 2px rgba(27, 27, 24, 0.035);
+  --shadow-md: 0 6px 18px rgba(27, 27, 24, 0.055);
+  --shadow-lg: 0 18px 40px rgba(27, 27, 24, 0.075);
+  --shadow-xl: 0 28px 60px rgba(27, 27, 24, 0.10);
+  --shadow-button: 0 12px 28px rgba(189, 75, 46, 0.18), inset 0 1px 0 rgba(255,255,255,0.45);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.1);
-  --shadow-button: 0 14px 32px -8px rgba(255, 107, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --grid-line-color: rgba(27, 27, 24, 0.065);
+  --grid-hour-bg: rgba(27, 27, 24, 0.014);
+}
 
-  --grid-line-color: rgba(0, 0, 0, 0.06);
-  --grid-hour-bg: rgba(0, 0, 0, 0.015);
+/* Shared numeric alignment for schedules and metrics. */
+button, input, select, .stat-pill, .pagination-info, .brand-badge, .tag-badge {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+  }
 }
