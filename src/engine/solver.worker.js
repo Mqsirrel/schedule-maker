@@ -15,9 +15,8 @@ if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
 
 /**
  * Depth-First Search with early conflict pruning.
- * The groups with the fewest viable sections are explored first so impossible
- * branches fail earlier. Results are ranked after generation; UI filtering can
- * therefore remain purely local and instant.
+ * Groups with fewer viable sections are explored first so impossible branches
+ * fail earlier. Results are ranked after generation; UI filtering stays local.
  */
 export function generateSchedulesDFS(courseGroups, options = {}) {
   const {
@@ -32,28 +31,31 @@ export function generateSchedulesDFS(courseGroups, options = {}) {
   const locked = new Set(lockedSections.map(sectionIdentity));
   const excluded = new Set(excludedSections.map(sectionIdentity));
 
-  const filteredGroups = courseGroups
-    .map(group => {
-      let candidates = group.filter(section => !excluded.has(sectionIdentity(section)));
+  const filteredGroups = courseGroups.map(group => {
+    let candidates = group.filter(section => !excluded.has(sectionIdentity(section)));
 
-      if (locked.size > 0) {
-        const lockedForGroup = candidates.filter(section => locked.has(sectionIdentity(section)));
-        if (lockedForGroup.length > 0) candidates = lockedForGroup;
-      }
+    if (locked.size > 0) {
+      const lockedForGroup = candidates.filter(section => locked.has(sectionIdentity(section)));
+      if (lockedForGroup.length > 0) candidates = lockedForGroup;
+    }
 
-      if (!allowFullSeats) {
-        const availableOnly = candidates.filter(sec => !sec.isFull);
-        // Preserve the existing behavior: if every section is full, keep the
-        // group usable rather than returning no schedules unexpectedly.
-        if (availableOnly.length > 0) candidates = availableOnly;
-      }
+    if (!allowFullSeats) {
+      const availableOnly = candidates.filter(sec => !sec.isFull);
+      // Preserve the existing behavior: if every section is full, keep the
+      // group usable rather than returning no schedules unexpectedly.
+      if (availableOnly.length > 0) candidates = availableOnly;
+    }
 
-      return candidates;
-    })
-    .filter(group => group.length > 0)
-    .sort((a, b) => a.length - b.length);
+    return candidates;
+  });
 
-  if (filteredGroups.length !== courseGroups.length) return [];
+  if (filteredGroups.some(group => group.length === 0)) return [];
+
+  // Explore the most constrained course first. This can reduce the search
+  // tree dramatically without changing which schedules are valid.
+  const orderedGroups = filteredGroups
+    .map((group, originalIndex) => ({ group, originalIndex }))
+    .sort((a, b) => a.group.length - b.group.length);
 
   const validSchedules = [];
   const currentAssignment = [];
@@ -61,7 +63,7 @@ export function generateSchedulesDFS(courseGroups, options = {}) {
   function backtrack(groupIndex) {
     if (validSchedules.length >= maxResults) return;
 
-    if (groupIndex === filteredGroups.length) {
+    if (groupIndex === orderedGroups.length) {
       validSchedules.push({
         id: `sched_${validSchedules.length + 1}`,
         sections: [...currentAssignment],
@@ -70,7 +72,7 @@ export function generateSchedulesDFS(courseGroups, options = {}) {
       return;
     }
 
-    const currentGroup = filteredGroups[groupIndex];
+    const currentGroup = orderedGroups[groupIndex].group;
     for (const section of currentGroup) {
       if (hasConflictWithAssignment(section, currentAssignment)) continue;
 
@@ -92,12 +94,15 @@ function sectionIdentity(section) {
 
 /**
  * Rank schedules using practical student-facing criteria.
- * Score is relative to the generated result set, so it remains meaningful
- * across semesters with very different timetable shapes.
+ * The score is relative to the generated result set, so it adapts to each
+ * semester instead of pretending that one fixed score fits every timetable.
  */
 function rankSchedules(schedules) {
   if (schedules.length <= 1) {
-    if (schedules[0]) schedules[0].score = 100;
+    if (schedules[0]) {
+      schedules[0].score = 100;
+      schedules[0].rank = 1;
+    }
     return schedules;
   }
 
@@ -118,7 +123,6 @@ function rankSchedules(schedules) {
     const finishScore = range(s => s.metrics.latestEndMinutes, m.latestEndMinutes, true);
     const seatsScore = range(s => s.metrics.availableSeats, m.availableSeats);
 
-    // Days and gaps dominate because they have the clearest day-to-day impact.
     const raw = (
       daysScore * 0.35 +
       gapsScore * 0.30 +
@@ -128,7 +132,6 @@ function rankSchedules(schedules) {
     );
 
     schedule.score = Math.round(raw * 100);
-    schedule.reasons = buildReasons(m, schedules);
   }
 
   schedules.sort((a, b) => b.score - a.score);
@@ -138,17 +141,6 @@ function rankSchedules(schedules) {
   });
 
   return schedules;
-}
-
-function buildReasons(metrics, schedules) {
-  const reasons = ['no_conflicts'];
-  const maxDaysOff = Math.max(...schedules.map(s => s.metrics.daysOffCount));
-  const minGaps = Math.min(...schedules.map(s => s.metrics.totalGapMinutes));
-
-  if (metrics.daysOffCount === maxDaysOff) reasons.push('more_days_off');
-  if (metrics.totalGapMinutes === minGaps) reasons.push('least_gaps');
-  if (metrics.availableSeats > 0) reasons.push('seats_available');
-  return reasons;
 }
 
 function hasConflictWithAssignment(candidateSection, assignedSections) {
@@ -168,7 +160,7 @@ function hasConflictWithAssignment(candidateSection, assignedSections) {
 }
 
 /**
- * Calculates useful, deterministic metrics for both UI and ranking.
+ * Calculates deterministic metrics for UI, filtering and ranking.
  */
 export function computeScheduleMetrics(sections) {
   let daysOffCount = 0;
@@ -181,13 +173,15 @@ export function computeScheduleMetrics(sections) {
   let hasFullSection = false;
   const instructors = new Set();
 
+  for (const sec of sections) {
+    if (sec.instructor) instructors.add(sec.instructor);
+    if (Number.isFinite(sec.availableSeats)) availableSeats += Math.max(0, sec.availableSeats);
+    if (sec.isFull) hasFullSection = true;
+  }
+
   for (const day of DAYS) {
     const daySlots = [];
     for (const sec of sections) {
-      if (sec.instructor) instructors.add(sec.instructor);
-      if (Number.isFinite(sec.availableSeats)) availableSeats += Math.max(0, sec.availableSeats);
-      if (sec.isFull) hasFullSection = true;
-
       const slots = sec.days[day] || [];
       for (const slot of slots) {
         daySlots.push(slot);
