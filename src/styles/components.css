@@ -32,12 +32,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--color-primary);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
 }
 
 .brand-text {
@@ -50,21 +50,23 @@
   font-family: var(--font-latin);
   font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--color-text-primary), var(--color-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
 }
 
 .brand-badge {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   padding: 0.2rem 0.6rem;
   border-radius: var(--radius-pill);
   background: var(--color-primary-subtle);
   color: var(--color-primary);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(255, 107, 0, 0.25);
 }
+
 
 .header-actions {
   display: flex;
@@ -84,12 +86,13 @@ html[data-theme="light"] .icon-moon { display: block; }
    ========================================================================== */
 .top-banner {
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, var(--color-bg-surface), var(--color-bg-surface-hover));
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: 1.5rem 2rem;
   box-shadow: var(--shadow-sm);
 }
+
 
 .banner-content {
   display: flex;
