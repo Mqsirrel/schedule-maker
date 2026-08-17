@@ -26,14 +26,23 @@ export class TimetableParser {
         if (!rows || rows.length === 0) {
           rows = this._extractGenericRows(doc);
         }
+
+        // Strategy 3: Fallback to tab-delimited or plain copied text
+        if (!rows || rows.length === 0) {
+          rows = this._extractFromPlaintext(htmlContent);
+        }
       } else {
         // Simple regex-based table row extraction for Node environment tests
         rows = this._extractRowsWithRegex(htmlContent);
+        if (!rows || rows.length === 0) {
+          rows = this._extractFromPlaintext(htmlContent);
+        }
       }
 
       if (!rows || rows.length === 0) {
         return { success: false, sections: [], error: 'no_table_found' };
       }
+
 
       const parsedSections = [];
       let rowCounter = 1;
@@ -205,12 +214,39 @@ export class TimetableParser {
 
   }
 
+  /**
+   * Plain text TSV/CSV fallback parser for copy-pasted tables
+   */
+  static _extractFromPlaintext(text) {
+    if (!text || typeof text !== 'string') return null;
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    const rows = [];
+
+    for (const line of lines) {
+      // Split by tabs or multiple spaces or commas
+      let cells = line.split('\t').map(c => c.trim());
+      if (cells.length < 8) {
+        cells = line.split(/\s{2,}/).map(c => c.trim());
+      }
+      if (cells.length < 8) {
+        cells = line.split(',').map(c => c.trim());
+      }
+
+      if (cells.length >= 8) {
+        rows.push(cells);
+      }
+    }
+
+    return rows.length > 0 ? rows : null;
+  }
+
   static _parseDaySlots(dayStr) {
-    if (!dayStr || dayStr.trim().length < 4) return [];
-    const parts = dayStr.split(/[\n,]/);
+    if (!dayStr || typeof dayStr !== 'string' || dayStr.trim().length < 4) return [];
+    const parts = dayStr.split(/[\n,;/]|\s*<br\s*\/?>\s*/i);
     const slots = [];
     for (const part of parts) {
-      const parsed = parseTimeRange(part.trim());
+      const clean = part.replace(/<[^>]+>/g, '').trim();
+      const parsed = parseTimeRange(clean);
       if (parsed) {
         slots.push(parsed);
       }
@@ -218,3 +254,4 @@ export class TimetableParser {
     return slots;
   }
 }
+

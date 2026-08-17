@@ -17,8 +17,8 @@ export function timeStringToMinutes(timeStr) {
   if (!timeStr || typeof timeStr !== 'string') return null;
   const cleanStr = timeStr.trim().toUpperCase();
 
-  const isPM = cleanStr.includes('PM') || cleanStr.includes('م');
-  const isAM = cleanStr.includes('AM') || cleanStr.includes('ص');
+  const isPM = cleanStr.includes('PM') || cleanStr.includes('م') || cleanStr.includes('مساء');
+  const isAM = cleanStr.includes('AM') || cleanStr.includes('ص') || cleanStr.includes('صباح');
 
   // Extract hours and minutes digits
   const match = cleanStr.match(/(\d{1,2}):(\d{2})/);
@@ -33,19 +33,23 @@ export function timeStringToMinutes(timeStr) {
     hours += 12;
   } else if (isAM && hours === 12) {
     hours = 0;
+  } else if (!isPM && !isAM && hours >= 1 && hours <= 6) {
+    // Implicit afternoon hours (e.g. 1:00 to 6:00 in university schedules are typically 13:00 to 18:00)
+    hours += 12;
   }
 
   return hours * 60 + minutes;
 }
 
 /**
- * Parses a time range string (e.g. "08:00-09:50", "08:00 - 10:00", "8:00-9:50")
+ * Parses a time range string (e.g. "08:00-09:50", "08:00 - 10:00", "08:00 – 09:50")
  * @param {string} rangeStr
  * @returns {{ startMinutes: number, endMinutes: number, formatted: string } | null}
  */
 export function parseTimeRange(rangeStr) {
   if (!rangeStr || typeof rangeStr !== 'string') return null;
-  const parts = rangeStr.split('-');
+  // Support standard hyphen (-), en-dash (–), em-dash (—), and arabic dash (ـ)
+  const parts = rangeStr.split(/[-–—ـ]/);
   if (parts.length < 2) return null;
 
   const startMinutes = timeStringToMinutes(parts[0]);
@@ -61,6 +65,7 @@ export function parseTimeRange(rangeStr) {
     formatted: rangeStr.trim()
   };
 }
+
 
 /**
  * Checks if two time intervals overlap.

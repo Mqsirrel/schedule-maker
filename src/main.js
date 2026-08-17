@@ -103,7 +103,27 @@ class ScheduleMakerApp {
     this.btnToggleLang.addEventListener('click', () => {
       const newLang = getLang() === 'ar' ? 'en' : 'ar';
       setLang(newLang);
+      this.courseSelector._updateStatusBadge();
+      this.renderCurrentSchedule();
     });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowRight') {
+        const delta = getLang() === 'ar' ? -1 : 1;
+        this.navigateSchedule(delta);
+      } else if (e.key === 'ArrowLeft') {
+        const delta = getLang() === 'ar' ? 1 : -1;
+        this.navigateSchedule(delta);
+      } else if (e.key === 'Escape') {
+        this.importModal.close();
+        this.helpModal.close();
+        if (this.courseDetailModal) this.courseDetailModal.close();
+      }
+    });
+
 
     // Demo Data
     this.btnLoadDemo.addEventListener('click', () => {

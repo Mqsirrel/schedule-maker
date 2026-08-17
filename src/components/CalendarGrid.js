@@ -1,11 +1,7 @@
 // Interactive Weekly Calendar Grid Component
-import { DAYS, DAY_LABELS } from '../engine/time.js';
-import { getLang } from '../i18n/translations.js';
+import { DAYS } from '../engine/time.js';
 
-const START_HOUR = 8; // 08:00 AM
-const END_HOUR = 18;  // 06:00 PM
-const TOTAL_HOURS = END_HOUR - START_HOUR; // 10 hours
-const PIXELS_PER_MINUTE = 1; // 1 min = 1px => 600px total height
+const PIXELS_PER_MINUTE = 1; // 1 min = 1px
 
 const COLOR_CLASSES = [
   'var(--course-color-1)',
@@ -24,6 +20,8 @@ export class CalendarGrid {
   constructor(containerId, options = {}) {
     this.container = document.getElementById(containerId);
     this.onCourseClick = options.onCourseClick || (() => {});
+    this.startHour = 8;
+    this.endHour = 18;
   }
 
   renderSchedule(schedule) {
@@ -33,6 +31,18 @@ export class CalendarGrid {
       this.container.innerHTML = `<div class="empty-state-card"><p>لا توجد بيانات لهذا الجدول</p></div>`;
       return;
     }
+
+    // Dynamic hour bounds calculation
+    const earliestMin = schedule.metrics?.earliestStartMinutes ?? 480;
+    const latestMin = schedule.metrics?.latestEndMinutes ?? 1080;
+
+    this.startHour = Math.min(8, Math.floor(earliestMin / 60));
+    this.endHour = Math.max(18, Math.ceil(latestMin / 60));
+    const totalHours = this.endHour - this.startHour;
+    const gridHeight = totalHours * 60;
+
+    // Apply dynamic height to matrix
+    this.container.style.height = `${gridHeight}px`;
 
     // Map unique course keys to consistent color palette
     const courseColorMap = new Map();
@@ -53,7 +63,7 @@ export class CalendarGrid {
     for (const day of DAYS) {
       html += `
         <div class="day-column-track" data-day="${day}">
-          ${this._renderDayGridlines()}
+          ${this._renderDayGridlines(totalHours)}
           ${this._renderDayCourseBlocks(schedule.sections, day, courseColorMap)}
         </div>
       `;
@@ -75,16 +85,16 @@ export class CalendarGrid {
 
   _renderHourMarkers() {
     let markers = '';
-    for (let h = START_HOUR; h < END_HOUR; h++) {
+    for (let h = this.startHour; h < this.endHour; h++) {
       const timeLabel = `${String(h).padStart(2, '0')}:00`;
       markers += `<div class="hour-marker">${timeLabel}</div>`;
     }
     return markers;
   }
 
-  _renderDayGridlines() {
+  _renderDayGridlines(totalHours) {
     let lines = '';
-    for (let h = 0; h < TOTAL_HOURS; h++) {
+    for (let h = 0; h < totalHours; h++) {
       lines += `<div class="day-column-gridline" style="top: ${h * 60}px;"></div>`;
     }
     return lines;
@@ -101,8 +111,8 @@ export class CalendarGrid {
         const startMin = slot.startMinutes;
         const endMin = slot.endMinutes;
 
-        // Offset from 08:00 (480 mins)
-        const top = Math.max(0, (startMin - START_HOUR * 60) * PIXELS_PER_MINUTE);
+        // Offset from startHour in pixels
+        const top = Math.max(0, (startMin - this.startHour * 60) * PIXELS_PER_MINUTE);
         const height = Math.max(28, (endMin - startMin) * PIXELS_PER_MINUTE);
 
         blocksHtml += `
