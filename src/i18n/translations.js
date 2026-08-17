@@ -2,12 +2,17 @@
 
 export const translations = {
   ar: {
+    // Accessibility & Navigation
+    skip_to_content: "تخطي إلى المحتوى الرئيسي",
+
     // Brand & Header
     badge_taibah: "جامعة طيبة",
     btn_help: "دليل الاستخدام",
     btn_theme: "تبديل المظهر",
     btn_import_timetable: "استيراد الجدول الزمني",
     btn_demo_data: "تجربة بيانات توضيحية",
+    btn_bookmark: "حفظ في المفضلة",
+
 
     // Banner / Hero
     hero_title: "رتب جدولك الجامعي بذكاء وبدون أي تعارضات",
@@ -52,7 +57,9 @@ export const translations = {
     btn_next_schedule: "الجدول التالي",
     stat_daysoff: "أيام Off:",
     stat_gaps: "ساعات الفراغ:",
+    stat_score: "المطابقة:",
     btn_favorite: "المفضلة",
+
     btn_export_png: "تصدير صورة",
     btn_export_ics: "تصدير للتقويم",
 
@@ -118,12 +125,17 @@ export const translations = {
   },
 
   en: {
+    // Accessibility & Navigation
+    skip_to_content: "Skip to main content",
+
     // Brand & Header
     badge_taibah: "Taibah University",
     btn_help: "Usage Guide",
     btn_theme: "Toggle Theme",
     btn_import_timetable: "Import Timetable",
     btn_demo_data: "Load Demo Data",
+    btn_bookmark: "Add to Favorites",
+
 
     // Banner / Hero
     hero_title: "Build Your Smart University Schedule Conflict-Free",
@@ -168,7 +180,9 @@ export const translations = {
     btn_next_schedule: "Next Schedule",
     stat_daysoff: "Days Off:",
     stat_gaps: "Wait Gaps:",
+    stat_score: "Match Score:",
     btn_favorite: "Favorite",
+
     btn_export_png: "Export Image",
     btn_export_ics: "Export Calendar",
 

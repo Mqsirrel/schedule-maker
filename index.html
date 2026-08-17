@@ -95,11 +95,12 @@
           </svg>
         </button>
 
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn-icon" title="GitHub Repository" aria-label="GitHub Repository">
+        <a href="https://github.com/Mqsirrel/schedule-maker" target="_blank" rel="noopener noreferrer" class="btn-icon" title="GitHub Repository" aria-label="GitHub Repository">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
           </svg>
         </a>
+
       </div>
     </div>
   </header>
@@ -315,15 +316,20 @@
 
             <!-- Schedule Metrics Badges -->
             <div class="schedule-stats" id="scheduleStats">
+              <span class="stat-pill" id="statScore" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                <span class="stat-label" data-i18n="stat_score">المطابقة:</span> <strong id="valScore">100%</strong>
+              </span>
               <span class="stat-pill" id="statDaysOff">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
-                <span class="stat-label">أيام Off:</span> <strong id="valDaysOff">0</strong>
+                <span class="stat-label" data-i18n="stat_daysoff">أيام Off:</span> <strong id="valDaysOff">0</strong>
               </span>
               <span class="stat-pill" id="statTotalGaps">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span class="stat-label">ساعات الفراغ:</span> <strong id="valTotalGaps">0h</strong>
+                <span class="stat-label" data-i18n="stat_gaps">ساعات الفراغ:</span> <strong id="valTotalGaps">0h</strong>
               </span>
             </div>
+
 
             <!-- Export Actions -->
             <div class="export-actions">
@@ -334,7 +340,7 @@
                 <span data-i18n="btn_favorite">المفضلة</span>
               </button>
 
-              <button id="btnExportImage" class="btn-icon-labeled" title="حفظ كصورة بجودة عالية">
+              <button id="btnExportImage" class="btn-icon-labeled" title="حفظ كصورة بجودة عالية" data-i18n-title="btn_export_png">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -343,7 +349,7 @@
                 <span data-i18n="btn_export_png">تصدير صورة</span>
               </button>
 
-              <button id="btnExportIcs" class="btn-icon-labeled" title="تصدير لتقويم الهاتف (Google/Apple Calendar)">
+              <button id="btnExportIcs" class="btn-icon-labeled" title="تصدير لتقويم الهاتف" data-i18n-title="btn_export_ics">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
@@ -351,6 +357,7 @@
                 </svg>
                 <span data-i18n="btn_export_ics">تصدير للتقويم</span>
               </button>
+
             </div>
           </div>
         </div>

@@ -78,6 +78,8 @@ class ScheduleMakerApp {
     this.currIndexEl = document.getElementById('currScheduleIndex');
     this.totalCountEl = document.getElementById('totalSchedulesCount');
 
+    this.statScore = document.getElementById('statScore');
+    this.valScore = document.getElementById('valScore');
     this.valDaysOff = document.getElementById('valDaysOff');
     this.valTotalGaps = document.getElementById('valTotalGaps');
 
@@ -89,6 +91,7 @@ class ScheduleMakerApp {
     this.courseDetailBody = document.getElementById('courseDetailBody');
     this.btnCloseCourseDetail = document.getElementById('btnCloseCourseDetail');
   }
+
 
   _bindEvents() {
     // Theme Toggle
@@ -310,12 +313,20 @@ class ScheduleMakerApp {
     this.btnNextSchedule.disabled = this.currentScheduleIndex >= this.filteredSchedules.length - 1;
 
     // Update Metrics
+    if (typeof currentSchedule.score === 'number' && this.statScore && this.valScore) {
+      this.valScore.textContent = `${currentSchedule.score}%`;
+      this.statScore.style.display = 'inline-flex';
+    } else if (this.statScore) {
+      this.statScore.style.display = 'none';
+    }
+
     this.valDaysOff.textContent = currentSchedule.metrics.daysOffCount;
     this.valTotalGaps.textContent = `${currentSchedule.metrics.totalGapHours}h`;
 
     // Update Bookmark button status
     const isBookmarked = AppStorage.isBookmarked(currentSchedule.id);
     this.btnBookmark.classList.toggle('bookmarked', isBookmarked);
+
 
     // Render Active View
     if (this.currentView === 'calendar') {
