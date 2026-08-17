@@ -1,153 +1,635 @@
-# 🎨 ScheduleMaker — AI Redesign Brief & Product Specification
+# ScheduleMaker Redesign Master Brief
 
-> **Task for the AI**: You are tasked with a **full UI/UX redesign** of **ScheduleMaker** (*مجدول جامعة طيبة الذكي*). The core functional requirements, data models, and aesthetic boundaries are defined below. **Everything else — layout composition, component styling, micro-animations, visual flair, and mobile ergonomics — is left to your creative imagination.**
+## Mission
 
----
+Redesign and refine ScheduleMaker as a real, production-quality university scheduling utility.
 
-## 1. 🎯 What is ScheduleMaker?
-**ScheduleMaker** is a fast, privacy-first, client-side timetable optimizer for students at **Taibah University (جامعة طيبة)** in Saudi Arabia.
+This is **not** a cosmetic reskin. Inspect the existing repository first. Preserve working functionality and improve the product end-to-end: correctness, solver behavior, parser reliability, UX, accessibility, performance, and visual design.
 
-* **The Problem**: Taibah University's registration portal (*TaibahReg / EAS*) presents students with giant HTML tables containing 300+ course sections with overlapping lectures, labs, and instructors. Building a weekly schedule manually takes hours and leads to clashes.
-* **The Solution**: Students drop their timetable file or paste portal text. ScheduleMaker parses all sections, runs a background **Web Worker constraint solver**, finds conflict-free schedule combinations in milliseconds, ranks them by student preferences (Days Off, Minimized Gaps, Seat Availability), and renders an interactive weekly calendar grid with 1-click **Calendar (`.ics`)** and **PNG Image** exports.
+A Pinterest/reference image may be provided separately. Use it as **visual inspiration only**. Extract its principles (depth, lighting, materials, composition, geometry, atmosphere) and create an original ScheduleMaker design. Do not copy its exact composition, artwork, branding, or layout.
 
----
+## Product promise
 
-## 2. 🔒 Non-Negotiable Invariants (Do Not Break)
-1. **100% Client-Side & Private**: Zero backend, zero telemetry, zero auth. Runs entirely in the browser using `localStorage`.
-2. **Web Worker DFS Solver**: Constraint-satisfaction backtracking runs in a non-blocking background worker with support for section locking and exclusion.
-3. **Bilingual Parity**: Full instant switching between **Arabic (RTL)** and **English (LTR)**.
-4. **Exporters**: 2x Retina PNG timetable image snapshot and RFC 5545 iCalendar (`.ics`) export.
+> Import your university timetable → choose your courses → get the best valid timetable.
 
----
+Optimize for:
 
-## 3. 🎨 Design Principles & Taste Skill v2 Rules
+**Speed → simplicity → clarity → control**
 
-### Aesthetic Direction
-* **Calm Minimalist Workspace / Utilitarian Luxury** (inspired by Linear and Notion).
-* Clean typography, spacious whitespace, tactile micro-interactions, and high information density without clutter.
-
-### The Color & Typography Locks
-* **Dark Base**: Off-black / deep ink `#10110f` surfaces (never pure `#000000`).
-* **Light Base**: Warm paper `#f3f0e8` / `#fcfbf7` surfaces (never sterile `#ffffff`).
-* **Single Primary Accent**: Warm Orange / Terracotta (`#ff6b00` or `#e86f41`).
-* **Course Blocks**: Quiet, desaturated, harmonious spot pastels (Blue, Sage, Amber, Lavender, Rose, Teal).
-* **Typography**:
-  - Arabic: `Tajawal`
-  - Latin: `Outfit` or `Manrope`
-  - Numbers / Data / Tokens: `JetBrains Mono` with `font-variant-numeric: tabular-nums` (prevents number jitter).
-
-### 🚫 Strict Anti-Slop Ban List
-* ❌ **No AI-Purple/Violet Glow Gradients**.
-* ❌ **No Em-Dashes or En-Dashes** in UI copy.
-* ❌ **No Section-Numbering Eyebrows** (`00 / INDEX`).
-* ❌ **No Decorative Cartoon Mascots or Fluff**.
-* ❌ **No Fake Div Mockup Dashboards** (keep the real interactive weekly schedule matrix).
-* ❌ **No `window.addEventListener('scroll')`** in JavaScript.
+A new student should reach a useful timetable in roughly four meaningful interactions. Advanced preferences must not block the first result.
 
 ---
 
-## 4. 📦 Data Schemas (TypeScript)
+# 1. Repository-first rule
 
-```typescript
-// Single Course Section (Parsed from portal)
-interface Section {
-  id: string;               // e.g. "CS-111_M26_101"
-  courseKey: string;        // e.g. "CS-111"
-  courseCode: string;       // e.g. "CS"
-  courseNumber: string;     // e.g. "111"
-  courseName: string;       // e.g. "أساسيات البرمجة"
-  section: string;          // e.g. "M26"
-  instructor: string;       // e.g. "د. أحمد الأحمدي"
-  campus: string;           // e.g. "الرئيسي - شطر الطلاب"
-  room: string;             // e.g. "معمل 102"
-  availableSeats: number;   // Remaining open seats
-  enrolledSeats: number;    // Already registered seats
-  isFull: boolean;          // true if availableSeats <= 0
-  days: {
-    su: Array<{ startMinutes: number; endMinutes: number; timeStr: string; formatted: string }>;
-    mo: Array<{ startMinutes: number; endMinutes: number; timeStr: string; formatted: string }>;
-    tu: Array<{ startMinutes: number; endMinutes: number; timeStr: string; formatted: string }>;
-    we: Array<{ startMinutes: number; endMinutes: number; timeStr: string; formatted: string }>;
-    th: Array<{ startMinutes: number; endMinutes: number; timeStr: string; formatted: string }>;
-  };
-}
+Before coding:
 
-// Complete Valid Timetable (Generated by Solver)
-interface GeneratedSchedule {
-  id: string;               // e.g. "sched_1"
-  rank: number;             // 1 to N (Rank #1 is top-recommended)
-  score: number;            // 0 to 100 (Overall student match score)
-  sections: Section[];      // Selected sections (one per course)
-  metrics: {
-    daysOffCount: number;         // Count of completely free days (0-4)
-    activeDays: string[];         // e.g. ['su', 'tu', 'we']
-    totalGapMinutes: number;      // Idle wait minutes between lectures
-    totalGapHours: string;        // e.g. "1.5"
-    earliestStartMinutes: number; // e.g. 480 (08:00 AM)
-    latestEndMinutes: number;     // e.g. 970 (16:10 PM)
-    totalStudyMinutes: number;    // Total active class minutes
-    instructorsCount: number;     // Distinct professors
-    availableSeats: number;       // Sum of available open seats
-    hasFullSection: boolean;      // true if any section has 0 open seats
-  };
-}
+1. Inspect the entire repository.
+2. Inspect recent commits and open PRs.
+3. Understand the parser, normalized data model, solver, Web Worker, ranking, constraints, state, calendar, table, filters, exports, storage, i18n, and tests.
+4. Identify what is already good.
+5. Identify real bugs and friction.
+6. Make a prioritized plan.
+7. Do not rewrite working systems merely for style.
+
+The existing code is the source of truth for implementation details. This document is the product/design/engineering direction.
+
+---
+
+# 2. Non-negotiable product invariants
+
+Preserve:
+
+- 100% client-side/private operation
+- no backend required
+- no telemetry or unnecessary tracking
+- Web Worker scheduling
+- Arabic/English parity and RTL/LTR correctness
+- PNG timetable export
+- ICS calendar export
+- local persistence
+- demo mode
+- existing parser capabilities
+- existing solver capabilities
+
+Do not add accounts, university passwords, chatbot features, unnecessary backend services, social features, gamification, or fake AI functionality.
+
+---
+
+# 3. Core functional priorities
+
+## 🔴 Critical: ranking must actually be correct
+
+Do not claim "Best Schedule" if the implementation only takes the first N valid schedules and ranks those afterward.
+
+The search must preserve the best candidates across the valid search space, using an appropriate bounded top-K strategy and stronger pruning where useful.
+
+The final result should be defensible as the best according to the active preferences.
+
+## 🔴 Hard constraints vs preferences
+
+Hard constraints determine validity:
+
+- selected courses
+- no time conflicts
+- locked sections
+- excluded sections
+
+Preferences determine ranking:
+
+- fewer university days
+- fewer gaps
+- preferred start time
+- preferred finish time
+- available seats
+- preferred instructor
+- preferred time range
+
+Never silently turn a preference into a hard constraint.
+
+## 🔴 Lock / exclude semantics
+
+A locked section **must** be included.
+
+An excluded section **must never** be used.
+
+An impossible/invalid lock must produce a clear no-solution state. Never silently ignore a lock.
+
+## 🔴 Parser reliability
+
+Prefer:
+
+```text
+semantic/header detection
+        ↓
+normalized columns
+        ↓
+validation
+        ↓
+positional fallback only when necessary
 ```
 
----
+Do not silently produce incorrect schedules when a portal layout changes.
 
-## 5. 🧩 UI Components to Redesign
+Add representative Taibah HTML fixtures and regression tests for parser behavior.
 
-Redesign the following views and components using your own creative layout, typography hierarchy, and micro-interactions:
+## 🔴 No-solution diagnostics
 
-1. **Header & Navigation**:
-   - Brand title + Taibah University badge.
-   - Quick controls: Help Guide, Language Switcher (AR/EN), Theme Toggle (Dark/Light), GitHub Link.
+Never stop at:
 
-2. **Quick Start / Import Hub**:
-   - File drag-and-drop zone (`.html` / `.txt`).
-   - Direct paste text area.
-   - "Load Demo Data" button for immediate zero-friction testing.
-   - Short tutorial explaining how to save the page from the university portal (*TaibahReg*).
+> No schedules found.
 
-3. **Course Selector Panel**:
-   - Form inputs: Course Code (e.g. `CS`), Course Number (e.g. `111`), Optional Section Wildcard (e.g. `M1`).
-   - Selected courses list: Informative cards showing course code, section count, and remove action.
-   - Timetable status indicator (e.g. `Loaded: 300 sections`).
-   - Primary Action: **"Generate Valid Schedules"** button.
+Explain likely conflicts when possible and give useful actions.
 
-4. **Filter & Control Toolbar**:
-   - Days Off filter (All, 1+ Off, 2+ Off, 3 Off).
-   - Sorting dropdown (Match Score, Most Days Off, Least Gaps, Earliest Finish, Latest Start).
-   - Instant search query for professor name or section number.
-   - Checkbox: "Show Full Sections (0 seats)".
-   - View switcher: **Weekly Visual Grid** vs. **Detailed Table**.
-   - Schedule pagination navigator (`< Schedule 1 of 48 >`) with `<kbd>←</kbd> <kbd>→</kbd>` shortcut hints.
-   - Metrics Badges: Match Score `%`, Days Off, Wait Gaps `X.Xh`.
-   - Export Actions: Favorite Bookmark, Export 2x PNG Image, Export `.ics` Calendar.
+Example:
 
-5. **Interactive Weekly Visual Grid (Sunday – Thursday)**:
-   - Dynamic hour bounding (automatically scales between earliest start and latest finish).
-   - Time axis markers on the side.
-   - Color-coded course blocks with course name, code, section, time, instructor, and room.
-   - Responsive mobile adaptation (horizontal scroll, tabbed days, or vertical drawer).
+```text
+No valid timetable exists with these courses.
 
-6. **Alternative Detailed Table View**:
-   - Clean tabular matrix listing each course, section, day times, instructor, and seat metrics.
+CS301 conflicts with MATH202 in every available combination.
 
-7. **Modals & Feedback**:
-   - Import modal, onboarding guide modal, course detail popover, and unobtrusive toast notifications.
+[Inspect conflict] [Change courses]
+```
+
+Prefer identifying a small conflicting set rather than dumping every failed combination.
 
 ---
 
-## 6. 🚀 Your Creative Mission
+# 4. Course selection
 
-> **Rebuild the interface to feel like a state-of-the-art, premium academic tool.**
->
-> Feel free to innovate on:
-> * Fluid CSS grid and flex layouts.
-> * Sophisticated card elevation, borders, and tactile hover states.
-> * Compact, space-efficient responsive layouts for both desktop and mobile.
-> * Elegant typography scale and visual weight distribution.
-> * Seamless animations and transitions (`transform: scale(0.985)`, smooth fades).
->
-> **Deliver complete, working, uncompressed code files (HTML, CSS, JS) ready for production.**
+After import, automatically discover courses.
+
+Preferred flow:
+
+```text
+23 courses found
+
+Search courses...
+
+CS301
+Operating Systems
+5 sections
+
+NET302
+Computer Networks
+4 sections
+
+SEC401
+Security
+3 sections
+```
+
+Manual course-code/number entry may remain as an advanced fallback.
+
+The normal student should not need to understand internal identifiers.
+
+Validate courses with zero usable sections before solving and explain the problem.
+
+---
+
+# 5. Preferences
+
+Use progressive disclosure.
+
+Defaults should be sensible.
+
+Advanced preferences can include:
+
+- prefer fewer days
+- minimize gaps
+- avoid early classes
+- avoid late classes
+- prefer available seats
+- preferred instructor
+- preferred time range
+
+Preferences should affect ranking, not validity, unless the user explicitly chooses a hard constraint.
+
+---
+
+# 6. Results experience
+
+The first result must be the strongest valid candidate.
+
+Make the reason obvious:
+
+```text
+BEST MATCH
+
+3 university days
+1h 30m total gaps
+Starts 9:00 AM
+Finishes 2:00 PM
+No conflicts
+All sections available
+```
+
+Do not use mysterious AI-style scoring.
+
+Alternatives must be easy to scan without clicking through hundreds of results one-by-one.
+
+Example:
+
+```text
+#1  3 days · 1h gaps · 9:00 start
+#2  3 days · 1h 30m gaps · 8:00 start
+#3  4 days · 30m gaps · 9:00 start
+```
+
+Preserve canonical overall ranking when filters are applied. If useful, expose both overall rank and filtered rank.
+
+Deduplicate schedules using a canonical section identity.
+
+---
+
+# 7. Metrics
+
+Useful metrics include:
+
+- days off
+- active days
+- total gaps
+- longest individual gap
+- earliest start
+- latest finish
+- total on-campus span
+- total class time
+- instructor count
+- available seats
+- full-section presence
+
+Prefer metrics that help a student make an actual decision.
+
+---
+
+# 8. Seats
+
+Treat seat availability as useful ranking information, not automatically as a hard exclusion.
+
+Clearly distinguish:
+
+- available
+- almost full
+- full
+
+A full section can remain as a fallback when no alternative exists, unless the user explicitly chooses to exclude full sections.
+
+---
+
+# 9. Solver reliability and performance
+
+The solver must not freeze the main UI.
+
+Use the Worker correctly.
+
+Support cancellation when a new solve supersedes an old solve.
+
+Prefer cancellation/abort signaling over arbitrary timeouts.
+
+Optimize with:
+
+- precomputed section conflicts where worthwhile
+- course/section ordering by constraint tightness
+- early pruning
+- bounded top-K retention
+- avoiding repeated time parsing
+- avoiding unnecessary object cloning
+
+Do not sacrifice correctness for a superficial benchmark.
+
+Add solver tests for:
+
+- exact overlap
+- partial overlap
+- adjacent classes
+- multiple meeting slots
+- multiple days
+- locks
+- invalid locks
+- exclusions
+- lock + exclusion interactions
+- full sections
+- no solution
+- duplicate schedules
+- ranking
+- cancellation
+- large search spaces
+
+---
+
+# 10. Export and persistence
+
+Verify ICS correctness including:
+
+- timezone behavior
+- multiple meetings
+- Arabic text
+- special characters
+- correct start/end times
+
+Verify PNG export on desktop and mobile.
+
+Version local storage schemas so future data-model changes do not break old cached data.
+
+---
+
+# 11. Accessibility
+
+Support:
+
+- keyboard navigation
+- visible focus
+- semantic controls
+- sufficient contrast
+- screen-reader labels
+- information not conveyed by color alone
+- touch-friendly mobile targets
+- reduced motion
+- correct Arabic RTL behavior
+- correct English LTR behavior
+
+Arabic should feel native, not like mechanically mirrored English.
+
+---
+
+# 12. Visual design direction
+
+The product should feel like a serious, premium academic utility.
+
+Desired qualities:
+
+- calm
+- precise
+- editorial
+- tactile but restrained
+- information-dense without clutter
+- excellent typography
+- strong alignment
+- clear hierarchy
+- subtle depth
+- useful motion only
+
+Avoid generic AI/SaaS aesthetics.
+
+Do not use:
+
+- AI-purple/violet glow gradients
+- excessive glassmorphism
+- glowing borders everywhere
+- huge rounded cards
+- excessive shadows
+- excessive pill buttons
+- decorative badges with no meaning
+- cartoon mascots
+- fake dashboard mockups
+- giant marketing hero sections
+- meaningless animations
+- fake AI terminology
+- visual noise
+
+Use course colors sparingly and keep them harmonious/desaturated enough that the timetable remains readable.
+
+Use the existing brand direction when appropriate, but improve it if the current implementation creates usability problems.
+
+---
+
+# 13. 3D background
+
+A 3D background is allowed and may be a major visual element if the reference image supports it.
+
+However:
+
+> The 3D environment is atmosphere around the product, not the product itself.
+
+If using 3D:
+
+- keep the actual scheduling UI dominant
+- maintain strong text/readability contrast
+- use depth and lighting intentionally
+- avoid decorative objects that compete with the calendar
+- avoid constant expensive animation
+- respect prefers-reduced-motion
+- lazy-load or progressively initialize the 3D layer
+- keep geometry and draw calls reasonable
+- disable/reduce 3D on low-power/mobile devices where appropriate
+- do not delay the useful UI because of 3D
+- the application must remain excellent with 3D disabled
+
+If the reference image is visually dramatic, translate its visual principles rather than copying it.
+
+---
+
+# 14. Responsive design
+
+Mobile is not a shrunken desktop.
+
+The timetable must remain genuinely usable on an iPhone.
+
+Possible mobile patterns:
+
+- day-by-day navigation
+- horizontal day tabs
+- vertical schedule cards
+- bottom sheets for section details
+- sticky essential actions
+
+Do not sacrifice schedule readability for decorative design.
+
+---
+
+# 15. Motion
+
+Use motion to communicate state:
+
+Good:
+
+- schedule switching
+- selection feedback
+- import completion
+- modal transitions
+- subtle result transitions
+
+Avoid:
+
+- perpetual floating
+- bouncing
+- pulsing
+- animated gradients
+- excessive parallax
+- animation for its own sake
+
+Support `prefers-reduced-motion`.
+
+---
+
+# 16. Architecture
+
+Keep clear boundaries between:
+
+```text
+parser
+solver
+constraints
+ranking
+state
+UI
+storage
+export
+```
+
+Avoid turning the application controller into an unmaintainable monolith.
+
+Do not over-engineer. Use the simplest architecture that keeps responsibilities clear.
+
+Do not add a dependency unless it solves a real problem.
+
+Prefer platform APIs for small functionality.
+
+---
+
+# 17. Performance
+
+Performance is a product feature.
+
+Audit:
+
+- initial load
+- bundle size
+- JavaScript execution
+- unnecessary re-renders
+- Worker lifecycle
+- solver runtime
+- parser runtime
+- localStorage usage
+- export performance
+- 3D rendering
+- asset loading
+
+Local filtering should not rerun the solver.
+
+The UI should remain responsive while solving.
+
+Do not add heavy libraries merely for visual effects.
+
+---
+
+# 18. Testing
+
+Every important bug discovered during the redesign should receive a regression test.
+
+At minimum, cover:
+
+### Parser
+- representative Taibah HTML
+- changed column ordering
+- Arabic data
+- multiple meeting times
+- malformed/empty input
+- invalid rows
+
+### Solver
+- overlap
+- adjacent times
+- multi-slot sections
+- locks
+- invalid locks
+- exclusions
+- no solution
+- duplicates
+- ranking
+- cancellation
+- large search spaces
+
+### Export
+- ICS timezone
+- Arabic text
+- multiple meetings
+- special characters
+
+Run tests and production build after implementation.
+
+---
+
+# 19. What NOT to build
+
+Do not add:
+
+- chatbot
+- AI assistant
+- AI-generated explanations where deterministic logic is sufficient
+- account system
+- backend
+- university authentication
+- social platform
+- gamification
+- notification infrastructure
+- unnecessary analytics
+- feature-heavy dashboards
+
+ScheduleMaker should become exceptionally good at scheduling, not become a general student platform.
+
+---
+
+# 20. Implementation workflow
+
+Follow this order:
+
+### Phase 1: Understand
+
+Inspect repository, architecture, commits, PRs, tests, and current behavior.
+
+### Phase 2: Correctness
+
+Fix ranking, constraints, deduplication, parser reliability, and solver cancellation.
+
+### Phase 3: Product UX
+
+Improve course discovery, preferences, no-solution explanations, result browsing, and metrics.
+
+### Phase 4: Visual redesign
+
+Apply the new visual language and Pinterest-inspired 3D direction without compromising usability.
+
+### Phase 5: Performance
+
+Measure and optimize real bottlenecks.
+
+### Phase 6: Verification
+
+Run:
+
+- all tests
+- production build
+- mobile verification
+- Arabic/RTL verification
+- dark/light verification
+- reduced-motion verification
+- import verification
+- solver verification
+- ranking verification
+- export verification
+- no-solution verification
+- 3D-disabled verification
+- console/error audit
+
+Do not stop at mockups. Implement the actual product.
+
+---
+
+# 21. Definition of done
+
+A student can:
+
+1. Open ScheduleMaker.
+2. Understand what to do immediately.
+3. Import a timetable without technical knowledge.
+4. See courses automatically discovered.
+5. Select courses quickly.
+6. Generate without configuring a complicated form.
+7. Receive a genuinely strong ranked schedule.
+8. Understand why it is recommended.
+9. Browse alternatives quickly.
+10. Lock or exclude sections predictably.
+11. Understand conflicts when no solution exists.
+12. Read the calendar comfortably on mobile.
+13. Save, share, or export the result.
+14. Use Arabic or English naturally.
+15. Experience no UI freeze during solving.
+
+The visual design should remain excellent even if the 3D layer is removed.
+
+If the product only looks impressive but requires too much thinking, the redesign has failed.
+
+---
+
+# Final instruction
+
+Do not imitate the reference image literally.
+
+Do not produce an AI-looking template.
+
+Do not optimize for screenshots or Dribbble-style presentation.
+
+Design for the real student using the real scheduling workflow.
+
+**Make the product feel inevitable: the simplest, fastest, clearest way to turn a university timetable into a good schedule.**
