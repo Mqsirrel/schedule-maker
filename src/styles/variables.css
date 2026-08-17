@@ -1,0 +1,112 @@
+/* Design System & Theme Variables */
+:root {
+  /* Typography */
+  --font-primary: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-latin: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Course Block Palette (Vibrant, high legibility in light & dark) */
+  --course-color-1: #4f46e5; /* Indigo */
+  --course-color-2: #0284c7; /* Sky */
+  --course-color-3: #059669; /* Emerald */
+  --course-color-4: #d97706; /* Amber */
+  --course-color-5: #db2777; /* Pink */
+  --course-color-6: #7c3aed; /* Violet */
+  --course-color-7: #0d9488; /* Teal */
+  --course-color-8: #ea580c; /* Orange */
+  --course-color-9: #6366f1; /* Purple */
+  --course-color-10: #10b981; /* Green */
+}
+
+/* Dark Theme (Default) */
+html[data-theme="dark"] {
+  --color-bg-base: #0f1117;
+  --color-bg-surface: #171a23;
+  --color-bg-surface-hover: #1f2430;
+  --color-bg-elevated: #242938;
+  --color-bg-glass: rgba(23, 26, 35, 0.85);
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.16);
+  --color-border-active: rgba(99, 102, 241, 0.5);
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #0f1117;
+
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-subtle: rgba(99, 102, 241, 0.15);
+
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #7c3aed;
+
+  --color-success: #10b981;
+  --color-success-subtle: rgba(16, 185, 129, 0.15);
+  --color-warning: #f59e0b;
+  --color-warning-subtle: rgba(245, 158, 11, 0.15);
+  --color-danger: #ef4444;
+  --color-danger-subtle: rgba(239, 68, 68, 0.15);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7);
+
+  --grid-line-color: rgba(255, 255, 255, 0.05);
+  --grid-hour-bg: rgba(255, 255, 255, 0.02);
+}
+
+/* Light Theme */
+html[data-theme="light"] {
+  --color-bg-base: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-hover: #f1f5f9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-glass: rgba(255, 255, 255, 0.85);
+
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-hover: rgba(0, 0, 0, 0.16);
+  --color-border-active: rgba(99, 102, 241, 0.6);
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
+
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-subtle: rgba(79, 70, 229, 0.1);
+
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+
+  --color-success: #059669;
+  --color-success-subtle: rgba(5, 150, 105, 0.1);
+  --color-warning: #d97706;
+  --color-warning-subtle: rgba(217, 119, 6, 0.1);
+  --color-danger: #dc2626;
+  --color-danger-subtle: rgba(220, 38, 38, 0.1);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  --grid-line-color: rgba(0, 0, 0, 0.06);
+  --grid-hour-bg: rgba(0, 0, 0, 0.015);
+}

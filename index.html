@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScheduleMaker | مجدول جامعة طيبة الذكي</title>
+  <meta name="description" content="أداة ذكية وسريعة لتوليد وترتيب الجداول الدراسية لطلاب جامعة طيبة بدون تعارضات زمنية وبخصوصية تامة 100%.">
+  <meta name="keywords" content="جامعة طيبة, مجدول الجداول, ترتيب الجدول, تعارض المواد, Taibah University, Schedule Maker, TaibahReg">
+  <meta name="author" content="ScheduleMaker Team">
+
+  <!-- Open Graph / Social Media Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ScheduleMaker | مجدول جامعة طيبة الذكي">
+  <meta property="og:description" content="توليد فوري للجداول الجامعية الخالية من التعارضات مع عرض أسبوعي تفاعلي وتصدير لتقويم الهاتف والصور.">
+  <meta property="og:locale" content="ar_SA">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./src/styles/variables.css">
+  <link rel="stylesheet" href="./src/styles/base.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+  <link rel="stylesheet" href="./src/styles/calendar.css">
+
+  <script>
+    // Theme and Language Initializer (Avoids FOUC)
+    (function() {
+      const savedTheme = localStorage.getItem('sm_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const savedLang = localStorage.getItem('sm_lang') || 'ar';
+      document.documentElement.setAttribute('lang', savedLang);
+      document.documentElement.setAttribute('dir', savedLang === 'ar' ? 'rtl' : 'ltr');
+    })();
+  </script>
+</head>
+<body>
+  <!-- Header / Navbar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <path d="m9 16 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">ScheduleMaker</h1>
+          <span class="brand-badge" data-i18n="badge_taibah">جامعة طيبة</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnOpenHelp" class="btn-icon" title="دليل الاستخدام" data-i18n-title="btn_help" aria-label="Help Guide">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
+
+        <button id="btnToggleLang" class="btn-pill" aria-label="Toggle Language">
+          <span id="langLabel">EN</span>
+        </button>
+
+        <button id="btnToggleTheme" class="btn-icon" title="تبديل المظهر" data-i18n-title="btn_theme" aria-label="Toggle Theme">
+          <!-- Sun Icon (Dark Mode) -->
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <!-- Moon Icon (Light Mode) -->
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn-icon" title="GitHub Repository" aria-label="GitHub Repository">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="app-layout">
+    <!-- Top Control Bar / Quick Actions -->
+    <section class="top-banner">
+      <div class="banner-content">
+        <div class="banner-text">
+          <h2 data-i18n="hero_title">رتب جدولك الجامعي بذكاء وبدون أي تعارضات</h2>
+          <p data-i18n="hero_desc">ارفع الجدول الزمني من موقع الجامعة، اختر المواد والشعب، وشاهد كل الجداول الممكنة فوراً.</p>
+        </div>
+        <div class="banner-actions">
+          <button id="btnOpenImport" class="btn btn-primary" aria-haspopup="dialog">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span data-i18n="btn_import_timetable">استيراد الجدول الزمني</span>
+          </button>
+          <button id="btnLoadDemo" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span data-i18n="btn_demo_data">تجربة بيانات توضيحية</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Grid: Sidebar (Course selection) & Results Area -->
+    <div class="workspace-grid">
+      <!-- Course Selector Sidebar -->
+      <aside class="sidebar-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <h3 data-i18n="title_wanted_courses">المواد المراد إضافتها</h3>
+          </div>
+          <span id="timetableStatusBadge" class="status-badge status-badge--empty" data-i18n="status_no_data">لا توجد بيانات</span>
+        </div>
+
+        <!-- Add Subject Form -->
+        <form id="addCourseForm" class="add-course-form" autocomplete="off">
+          <div class="form-inputs-row">
+            <div class="input-field">
+              <label for="courseCode" data-i18n="lbl_course_code">رمز المادة</label>
+              <input type="text" id="courseCode" list="listCourseCodes" placeholder="مثل: CS" class="input-text uppercase" autocomplete="off" required>
+              <datalist id="listCourseCodes"></datalist>
+            </div>
+            <div class="input-field">
+              <label for="courseNumber" data-i18n="lbl_course_num">رقم المادة</label>
+              <input type="text" id="courseNumber" list="listCourseNumbers" placeholder="مثل: 181" class="input-text uppercase" autocomplete="off" required>
+              <datalist id="listCourseNumbers"></datalist>
+            </div>
+            <div class="input-field">
+              <label for="courseSection" data-i18n="lbl_section">الشعبة</label>
+              <input type="text" id="courseSection" list="listCourseSections" placeholder="الكل" class="input-text uppercase" autocomplete="off">
+              <datalist id="listCourseSections"></datalist>
+            </div>
+          </div>
+
+          <div id="coursePreviewMeta" class="course-meta-box" hidden>
+            <span class="meta-icon">✓</span>
+            <span id="coursePreviewName" class="meta-name"></span>
+            <span id="coursePreviewSectionsCount" class="meta-count"></span>
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" id="btnAddCourse" class="btn btn-primary btn-block" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span data-i18n="btn_add_course">إضافة المادة للقائمة</span>
+            </button>
+          </div>
+          <small class="form-hint" data-i18n="hint_section_wildcard">• يمكنك ترك حقل الشعبة فارغاً لاختيار كافة الشعب المتاحة، أو كتابة بدايتها لتضمين مجموعة محددة.</small>
+        </form>
+
+        <!-- List of Selected Courses -->
+        <div class="selected-courses-container">
+          <div class="selected-header">
+            <span class="selected-title" data-i18n="title_selected_list">المواد المختارة (<span id="countSelectedCourses">0</span>)</span>
+            <button id="btnClearAllCourses" class="btn-text-danger" style="display:none" data-i18n="btn_clear_all">مسح الكل</button>
+          </div>
+          <ul id="selectedCoursesList" class="selected-courses-list">
+            <!-- Empty state -->
+            <li class="empty-state-card" id="emptyCoursesNotice">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <p data-i18n="msg_no_courses_added">لم تتم إضافة أي مادة بعد. استورد الجدول ثم أضف المواد لبدء توليد الجداول.</p>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Solve & Generation Button -->
+        <div class="sidebar-footer">
+          <button id="btnGenerateSchedules" class="btn btn-accent btn-block btn-lg" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span data-i18n="btn_generate_schedules">توليد وبحث الجداول الممكنة</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Results Display Area -->
+      <section class="results-panel">
+        <!-- Results Top Toolbar (Filters, Views, Pagination) -->
+        <div class="results-toolbar" id="resultsToolbar" style="display: none;">
+          <!-- Filter Controls Bar -->
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="filterDaysOff" data-i18n="lbl_filter_daysoff">أيام الفراغ:</label>
+              <select id="filterDaysOff" class="select-input">
+                <option value="all" data-i18n="opt_all">الكل</option>
+                <option value="any_off" data-i18n="opt_has_off">تحتوي على أيام Off</option>
+                <option value="1_off" data-i18n="opt_1_off">يوم Off واحد على الأقل</option>
+                <option value="2_off" data-i18n="opt_2_off">يومين Off أو أكثر</option>
+                <option value="3_off" data-i18n="opt_3_off">3 أيام Off</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="sortResultsBy" data-i18n="lbl_sort_by">ترتيب حسب:</label>
+              <select id="sortResultsBy" class="select-input">
+                <option value="default" data-i18n="sort_default">الترتيب الافتراضي</option>
+                <option value="most_days_off" data-i18n="sort_days_off">الأكثر أيام فراغ (Off)</option>
+                <option value="least_gaps" data-i18n="sort_least_gaps">الأقل فراغات بين المحاضرات</option>
+                <option value="earliest_finish" data-i18n="sort_early_finish">الانتهاء مبكراً</option>
+                <option value="latest_start" data-i18n="sort_late_start">البدء متأخراً (بدون 8 صباحاً)</option>
+              </select>
+            </div>
+
+            <div class="filter-group search-filter">
+              <div class="search-input-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchDoctorSection" placeholder="بحث باسم دكتور أو شعبة..." data-i18n-placeholder="ph_search_doctor" class="input-text input-search">
+              </div>
+            </div>
+
+            <div class="checkbox-filter">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="chkShowFullSections">
+                <span class="checkmark"></span>
+                <span data-i18n="chk_show_full_seats">إظهار الشعب الممتلئة (بدون مقاعد)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sub-bar: View Switcher, Pagination, Exporters -->
+          <div class="sub-toolbar">
+            <!-- View Mode Switcher -->
+            <div class="view-mode-toggle" role="tablist" aria-label="Schedule View Mode">
+              <button id="btnViewCalendar" class="view-btn active" role="tab" aria-selected="true" aria-controls="calendarViewContainer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span data-i18n="tab_calendar_view">الجدول الأسبوعي</span>
+              </button>
+              <button id="btnViewTable" class="view-btn" role="tab" aria-selected="false" aria-controls="tableViewContainer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span data-i18n="tab_table_view">جدول التفاصيل</span>
+              </button>
+            </div>
+
+            <!-- Schedule Pagination Navigator -->
+            <div class="schedule-pagination">
+              <button id="btnPrevSchedule" class="btn-nav" title="الجدول السابق" data-i18n-title="btn_prev_schedule" aria-label="Previous Schedule" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+              <span class="pagination-info">
+                <span data-i18n="txt_schedule">جدول</span>
+                <strong id="currScheduleIndex">0</strong>
+                <span data-i18n="txt_of">من</span>
+                <strong id="totalSchedulesCount">0</strong>
+              </span>
+              <button id="btnNextSchedule" class="btn-nav" title="الجدول التالي" data-i18n-title="btn_next_schedule" aria-label="Next Schedule" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Schedule Metrics Badges -->
+            <div class="schedule-stats" id="scheduleStats">
+              <span class="stat-pill" id="statDaysOff">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>
+                <span class="stat-label">أيام Off:</span> <strong id="valDaysOff">0</strong>
+              </span>
+              <span class="stat-pill" id="statTotalGaps">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span class="stat-label">ساعات الفراغ:</span> <strong id="valTotalGaps">0h</strong>
+              </span>
+            </div>
+
+            <!-- Export Actions -->
+            <div class="export-actions">
+              <button id="btnBookmarkSchedule" class="btn-icon-labeled" title="حفظ في المفضلة" data-i18n-title="btn_bookmark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span data-i18n="btn_favorite">المفضلة</span>
+              </button>
+
+              <button id="btnExportImage" class="btn-icon-labeled" title="حفظ كصورة بجودة عالية">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span data-i18n="btn_export_png">تصدير صورة</span>
+              </button>
+
+              <button id="btnExportIcs" class="btn-icon-labeled" title="تصدير لتقويم الهاتف (Google/Apple Calendar)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span data-i18n="btn_export_ics">تصدير للتقويم</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule Visual Display Containers -->
+        <div class="results-content">
+          <!-- State 1: Placeholder Before Generation -->
+          <div class="placeholder-container" id="resultsPlaceholder">
+            <div class="placeholder-card">
+              <div class="placeholder-illustration">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <line x1="8" y1="14" x2="8" y2="14"></line>
+                  <line x1="12" y1="14" x2="12" y2="14"></line>
+                  <line x1="16" y1="14" x2="16" y2="14"></line>
+                </svg>
+              </div>
+              <h3 data-i18n="placeholder_ready_title">مستعد لترتيب جدولك؟</h3>
+              <p data-i18n="placeholder_ready_desc">استورد ملف الجدول الزمني أو جرب البيانات التوضيحية، ثم أضف المواد التي ترغب بتسجيلها واضغط "توليد وبحث الجداول".</p>
+              <div class="placeholder-actions">
+                <button class="btn btn-primary" onclick="document.getElementById('btnOpenImport').click()">
+                  <span data-i18n="btn_import_now">استيراد الجدول الآن</span>
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('btnLoadDemo').click()">
+                  <span data-i18n="btn_demo_now">تجربة سريعة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- State 2: Calendar Weekly Graphical Grid -->
+          <div class="schedule-view-wrapper" id="calendarViewContainer" style="display: none;">
+            <div class="calendar-card" id="calendarPrintableArea">
+              <!-- Calendar Header: Days of the week (Sun - Thu) -->
+              <div class="calendar-header-row" id="calendarHeaderRow">
+                <div class="time-col-header" data-i18n="col_time">الوقت</div>
+                <div class="day-col-header" data-day="su" data-i18n="day_sun">الأحد</div>
+                <div class="day-col-header" data-day="mo" data-i18n="day_mon">الاثنين</div>
+                <div class="day-col-header" data-day="tu" data-i18n="day_tue">الثلاثاء</div>
+                <div class="day-col-header" data-day="we" data-i18n="day_wed">الأربعاء</div>
+                <div class="day-col-header" data-day="th" data-i18n="day_thu">الخميس</div>
+              </div>
+
+              <!-- Calendar Grid Matrix -->
+              <div class="calendar-body-matrix" id="calendarGridMatrix">
+                <!-- Dynamically generated time rows & course blocks -->
+              </div>
+            </div>
+          </div>
+
+          <!-- State 3: Detailed Table Matrix -->
+          <div class="schedule-view-wrapper" id="tableViewContainer" style="display: none;">
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="schedule-detail-table" id="scheduleDetailTable">
+                  <thead>
+                    <tr>
+                      <th data-i18n="th_row_id">#</th>
+                      <th data-i18n="th_course_name">اسم المادة</th>
+                      <th data-i18n="th_code_num">الرمز والرقم</th>
+                      <th data-i18n="th_section">الشعبة</th>
+                      <th data-i18n="th_instructor">أستاذ المادة</th>
+                      <th data-i18n="day_sun">الأحد</th>
+                      <th data-i18n="day_mon">الاثنين</th>
+                      <th data-i18n="day_tue">الثلاثاء</th>
+                      <th data-i18n="day_wed">الأربعاء</th>
+                      <th data-i18n="day_thu">الخميس</th>
+                      <th data-i18n="th_seats_available">المتاح</th>
+                      <th data-i18n="th_seats_enrolled">المسجل</th>
+                    </tr>
+                  </thead>
+                  <tbody id="scheduleDetailTbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Import Modal Hub -->
+  <dialog id="importModal" class="app-modal" aria-labelledby="modalImportTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <h3 id="modalImportTitle" data-i18n="modal_import_title">استيراد الجدول الزمني (جامعة طيبة)</h3>
+        </div>
+        <button class="modal-close-btn" id="btnCloseImport" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="tab-btn active" id="tabUploadFile" data-i18n="tab_upload_file">رفع ملف HTML</button>
+        <button class="tab-btn" id="tabPasteText" data-i18n="tab_paste_text">لصق النص / الكود</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tab 1: File Drop Zone -->
+        <div class="tab-content" id="contentUploadFile">
+          <div class="drop-zone" id="fileDropZone">
+            <input type="file" id="inputFileUpload" accept=".html,.htm,.txt" hidden>
+            <div class="drop-zone-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="12" y2="12"></line>
+                <line x1="15" y1="15" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <h4 data-i18n="dropzone_title">اسحب وأفلت ملف الجدول الزمني هنا</h4>
+            <p data-i18n="dropzone_subtitle">أو <span class="text-link" data-i18n="dropzone_browse">اضغط لاختيار الملف من جهازك</span> (بصيغة HTML)</p>
+          </div>
+
+          <div class="import-helper-alert">
+            <div class="alert-icon">💡</div>
+            <div class="alert-text">
+              <p><strong data-i18n="guide_quick_heading">كيف تحصل على الجدول الزمني؟</strong></p>
+              <p data-i18n="guide_quick_steps">سجل دخولك في بوابة جامعة طيبة (TaibahReg) ➔ ادخل صفحة الجدول الزمني ➔ اضغط بزر الفأرة الأيمن في أي مكان ثم اختر "حفظ باسم (Save As)" بصيغة HTML.</p>
+              <button type="button" class="btn-text" id="btnOpenFullGuide" data-i18n="btn_view_full_guide">شاهد الشرح المصور بالخطوات ➔</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Direct Paste Box -->
+        <div class="tab-content" id="contentPasteText" style="display: none;">
+          <label for="txtPasteArea" class="form-label" data-i18n="lbl_paste_desc">انسخ كود صفحة الجدول أو النص من بوابة التسجيل والصقه هنا مباشرة:</label>
+          <textarea id="txtPasteArea" class="text-area-input" rows="8" placeholder="الصق كود الـ HTML هنا..." data-i18n-placeholder="ph_paste_area"></textarea>
+          <button id="btnProcessPaste" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+            <span data-i18n="btn_process_pasted_data">معالجة واستيراد البيانات</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Help & Step-by-Step Tutorial Modal -->
+  <dialog id="helpModal" class="app-modal" aria-labelledby="modalHelpTitle">
+    <div class="modal-card modal-card--lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <h3 id="modalHelpTitle" data-i18n="modal_help_title">دليل استخدام مجدول جامعة طيبة الذكي</h3>
+        </div>
+        <button class="modal-close-btn" id="btnCloseHelp" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-body tutorial-body">
+        <div class="tutorial-step">
+          <div class="step-badge">1</div>
+          <div class="step-content">
+            <h4 data-i18n="step1_title">تسجيل الدخول في بوابة الجامعة</h4>
+            <p data-i18n="step1_desc">توجه إلى بوابة النظام الأكاديمي بجامعة طيبة (EAS / TaibahReg) وقم بتسجيل الدخول بحسابك الجامعي.</p>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-badge">2</div>
+          <div class="step-content">
+            <h4 data-i18n="step2_title">الانتقال لصفحة الجدول الزمني</h4>
+            <p data-i18n="step2_desc">من القائمة، توجه لصفحة استبدال/اختيار المواد أو الجدول الزمني للشعب المتاحة في الفصل الحالي.</p>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-badge">3</div>
+          <div class="step-content">
+            <h4 data-i18n="step3_title">حفظ الصفحة بصيغة HTML</h4>
+            <p data-i18n="step3_desc">اضغط في أي مكان فارغ داخل الصفحة بزر الفأرة الأيمن (Right-Click) واختر <strong>Save As... (حفظ باسم)</strong>، ثم احفظ الملف بصيغة Webpage (HTML).</p>
+          </div>
+        </div>
+
+        <div class="tutorial-step">
+          <div class="step-badge">4</div>
+          <div class="step-content">
+            <h4 data-i18n="step4_title">إسقاط الملف في الموقع</h4>
+            <p data-i18n="step4_desc">اسحب الملف المحفوظ إلى هذا الموقع، أو اختر "استيراد الجدول الزمني" ثم حدد الملف.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Course Detail Popover / Modal -->
+  <dialog id="courseDetailModal" class="app-modal" aria-labelledby="modalCourseDetailTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="modalCourseDetailTitle">تفاصيل المادة</h3>
+        </div>
+        <button class="modal-close-btn" id="btnCloseCourseDetail" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="courseDetailBody">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Hidden Audio Player for generation chime feedback -->
+  <audio id="audioChime" preload="none"></audio>
+
+  <!-- App Script Entrypoint -->
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

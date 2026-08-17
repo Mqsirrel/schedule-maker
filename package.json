@@ -1,0 +1,18 @@
+{
+  "name": "schedulemaker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Smart Academic Schedule Generator for University Students",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "html-to-image": "^1.11.11"
+  }
+}
