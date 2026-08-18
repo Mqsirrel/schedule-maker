@@ -166,6 +166,7 @@ class ScheduleMakerApp {
       this.timetableSections = cached;
       this.courseSelector.setTimetableData(cached);
     }
+    this.wantedCourseGroups = this.courseSelector.getWantedCourseGroups();
   }
 
   onTimetableLoaded(sections) {

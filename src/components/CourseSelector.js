@@ -1,5 +1,6 @@
-// Course Selection Controller: Datalists, Autocomplete & Selected Courses Manager
+// Course Selection Controller: Datalists, Autocomplete & Saved Courses Manager with Include/Exclude Toggles
 import { t } from '../i18n/translations.js';
+import { AppStorage } from '../utils/storage.js';
 
 export class CourseSelector {
   constructor(options = {}) {
@@ -8,10 +9,12 @@ export class CourseSelector {
     this.notification = options.notification;
 
     this.allSections = [];
-    this.wantedCourses = {}; // { 'CS-181': [section1, section2, ...] }
+    // Structure: { 'CS-181': { sections: [...], enabled: true } }
+    this.wantedCourses = {};
 
     this._initDOMElements();
     this._bindEvents();
+    this._loadSavedCourses();
   }
 
   _initDOMElements() {
@@ -57,6 +60,26 @@ export class CourseSelector {
     this.btnClearAll.addEventListener('click', () => {
       this.clearAll();
     });
+  }
+
+  _loadSavedCourses() {
+    const saved = AppStorage.getWantedCourses();
+    if (saved && typeof saved === 'object') {
+      const normalized = {};
+      for (const [key, val] of Object.entries(saved)) {
+        if (Array.isArray(val)) {
+          normalized[key] = { sections: val, enabled: true };
+        } else if (val && Array.isArray(val.sections)) {
+          normalized[key] = { sections: val.sections, enabled: val.enabled !== false };
+        }
+      }
+      this.wantedCourses = normalized;
+      this._renderSelectedCourses();
+    }
+  }
+
+  _persistSavedCourses() {
+    AppStorage.saveWantedCourses(this.wantedCourses);
   }
 
   setTimetableData(sections) {
@@ -129,7 +152,6 @@ export class CourseSelector {
     }
   }
 
-
   _hidePreview() {
     this.previewBox.hidden = true;
     this.btnAdd.disabled = true;
@@ -161,7 +183,12 @@ export class CourseSelector {
       return;
     }
 
-    this.wantedCourses[courseKey] = matchingSections;
+    this.wantedCourses[courseKey] = {
+      sections: matchingSections,
+      enabled: true
+    };
+
+    this._persistSavedCourses();
 
     // Reset inputs
     this.inputCode.value = '';
@@ -179,9 +206,19 @@ export class CourseSelector {
     this.onCoursesChange(this.getWantedCourseGroups());
   }
 
+  toggleCourseEnabled(courseKey) {
+    if (this.wantedCourses[courseKey]) {
+      this.wantedCourses[courseKey].enabled = !this.wantedCourses[courseKey].enabled;
+      this._persistSavedCourses();
+      this._renderSelectedCourses();
+      this.onCoursesChange(this.getWantedCourseGroups());
+    }
+  }
+
   removeCourse(courseKey) {
     if (this.wantedCourses[courseKey]) {
       delete this.wantedCourses[courseKey];
+      this._persistSavedCourses();
       this._renderSelectedCourses();
       this.onCoursesChange(this.getWantedCourseGroups());
     }
@@ -189,19 +226,32 @@ export class CourseSelector {
 
   clearAll() {
     this.wantedCourses = {};
+    this._persistSavedCourses();
     this._renderSelectedCourses();
     this.onCoursesChange(this.getWantedCourseGroups());
   }
 
+  /**
+   * Returns only active/enabled course groups for schedule solving.
+   * @returns {Array<Array<object>>}
+   */
   getWantedCourseGroups() {
-    return Object.values(this.wantedCourses);
+    const activeGroups = [];
+    for (const entry of Object.values(this.wantedCourses)) {
+      if (entry && Array.isArray(entry.sections) && entry.enabled !== false) {
+        activeGroups.push(entry.sections);
+      }
+    }
+    return activeGroups;
   }
 
   _renderSelectedCourses() {
     const keys = Object.keys(this.wantedCourses);
-    this.countBadge.textContent = keys.length;
+    const totalCount = keys.length;
+    const activeCount = keys.filter(k => this.wantedCourses[k].enabled !== false).length;
 
-    if (keys.length === 0) {
+    if (totalCount === 0) {
+      this.countBadge.textContent = '0';
       this.coursesListEl.innerHTML = '';
       this.coursesListEl.appendChild(this.emptyNotice);
       this.emptyNotice.style.display = 'flex';
@@ -210,27 +260,36 @@ export class CourseSelector {
       return;
     }
 
+    this.countBadge.textContent = totalCount === activeCount ? String(activeCount) : `${activeCount}/${totalCount}`;
     this.emptyNotice.style.display = 'none';
     this.btnClearAll.style.display = 'inline-block';
-    this.btnGenerate.disabled = keys.length < 1;
+    this.btnGenerate.disabled = activeCount < 1;
 
     this.coursesListEl.innerHTML = keys.map(key => {
-      const sections = this.wantedCourses[key];
+      const entry = this.wantedCourses[key];
+      const sections = entry.sections;
+      const isEnabled = entry.enabled !== false;
       const first = sections[0];
       const sectionsSummary = sections.length === 1
         ? `شعبة ${first.section}`
         : `${sections.length} شُعب (${sections.map(s => s.section).slice(0, 3).join(', ')}${sections.length > 3 ? '...' : ''})`;
 
       return `
-        <li class="course-card-item">
+        <li class="course-card-item ${!isEnabled ? 'course-card-item--disabled' : ''}">
+          <label class="course-item-check-wrap" title="${isEnabled ? 'مفعلة في الجدول (اضغط للاستبعاد مؤقتاً)' : 'مستبعدة مؤقتاً (اضغط لتضمينها)'}">
+            <input type="checkbox" class="course-toggle-checkbox" data-key="${key}" ${isEnabled ? 'checked' : ''} aria-label="Toggle ${key}">
+          </label>
+
           <div class="course-item-info">
             <span class="course-item-title">${this._escapeHtml(first.courseName)}</span>
             <div class="course-item-tags">
               <span class="tag-badge">${this._escapeHtml(key)}</span>
               <span class="tag-badge">${this._escapeHtml(sectionsSummary)}</span>
+              ${!isEnabled ? '<span class="tag-badge tag-badge--inactive">مستبعدة مؤقتاً</span>' : ''}
             </div>
           </div>
-          <button type="button" class="btn-remove-course" data-key="${key}" title="حذف المادة" aria-label="Remove Course">
+
+          <button type="button" class="btn-remove-course" data-key="${key}" title="حذف المادة نهائياً" aria-label="Remove Course">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -240,9 +299,17 @@ export class CourseSelector {
       `;
     }).join('');
 
+    // Attach toggle checkbox listeners
+    this.coursesListEl.querySelectorAll('.course-toggle-checkbox').forEach(chk => {
+      chk.addEventListener('change', () => {
+        const key = chk.getAttribute('data-key');
+        this.toggleCourseEnabled(key);
+      });
+    });
+
     // Attach remove listeners
     this.coursesListEl.querySelectorAll('.btn-remove-course').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-key');
         this.removeCourse(key);
       });
