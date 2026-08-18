@@ -1,43 +1,40 @@
 /*
  * Responsive refinement layer.
  *
- * This is intentionally a responsive system, not a phone-only override.
- * Desktop remains the baseline; tablet and phone progressively reorganize
- * the same components around available space and touch constraints.
+ * One responsive system for laptop, tablet and phone. Desktop remains the
+ * baseline; smaller viewports progressively reorganize the same components.
  */
 
-/* --------------------------------------------------------------------------
-   Large laptop / desktop refinements
-   -------------------------------------------------------------------------- */
+/* Large laptops */
 @media (min-width: 1280px) {
+  .app-layout { padding-inline: clamp(20px, 3vw, 48px); }
+  .workspace-grid { gap: clamp(16px, 2vw, 28px); }
+  .calendar-card { min-width: 0; }
+}
+
+/* Standard laptop / small desktop: keep the workspace side-by-side. */
+@media (min-width: 1024px) and (max-width: 1279px) {
   .app-layout {
-    padding-inline: clamp(20px, 3vw, 48px);
+    width: 100%;
+    max-width: none;
+    padding-inline: clamp(16px, 2.5vw, 32px);
   }
 
   .workspace-grid {
-    gap: clamp(16px, 2vw, 28px);
+    grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+    gap: 16px;
   }
 
-  .calendar-card {
-    min-width: 0;
-  }
+  .sidebar-panel { padding: 1.25rem; }
+  .form-inputs-row { grid-template-columns: 1fr 1fr 1fr; }
+  .top-banner { padding-inline: clamp(1.25rem, 2vw, 1.75rem); }
 }
 
-/* --------------------------------------------------------------------------
-   Tablet: 641px–1023px
-   Keep the desktop information architecture, but avoid cramped sidebars and
-   toolbars. This is a layout adaptation, not a shrunken desktop.
-   -------------------------------------------------------------------------- */
+/* Tablet: full-width sections rather than cramped desktop columns. */
 @media (min-width: 641px) and (max-width: 1023px) {
-  :root {
-    --responsive-gutter: clamp(16px, 3vw, 28px);
-  }
+  :root { --responsive-gutter: clamp(16px, 3vw, 28px); }
 
-  html,
-  body {
-    min-width: 0;
-    overflow-x: hidden;
-  }
+  html, body { min-width: 0; overflow-x: hidden; }
 
   .header-container {
     padding-inline: var(--responsive-gutter);
@@ -50,16 +47,8 @@
     padding: 16px var(--responsive-gutter) 28px;
   }
 
-  .top-banner {
-    margin-bottom: 14px;
-  }
+  .banner-content { gap: 16px; }
 
-  .banner-content {
-    gap: 16px;
-  }
-
-  /* Give the main workspace priority. The input panel becomes a full-width
-     strip above results instead of competing with a narrow calendar. */
   .workspace-grid {
     display: flex;
     flex-direction: column;
@@ -68,153 +57,79 @@
 
   .sidebar-panel {
     width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    gap: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
-  .sidebar-panel > :last-child {
-    grid-column: 1 / -1;
-  }
+  .form-inputs-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-  .form-inputs-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  .results-toolbar { gap: 12px; }
+  .filters-row, .sub-toolbar { flex-wrap: wrap; gap: 10px; }
 
-  .results-toolbar {
-    gap: 12px;
-  }
-
-  .filters-row,
-  .sub-toolbar {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .filter-group,
-  .search-filter {
+  .filter-group, .search-filter {
     min-width: 180px;
     flex: 1 1 180px;
   }
 
-  .export-actions {
-    margin-inline-start: auto;
-  }
+  .export-actions { margin-inline-start: auto; }
 
   .calendar-card {
     width: 100%;
     min-width: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 
+  .calendar-header-row, .calendar-body-matrix { min-width: 760px; }
   .calendar-header-row,
-  .calendar-body-matrix {
-    min-width: 760px;
-  }
-
-  .calendar-header-row {
-    grid-template-columns: 64px repeat(5, minmax(140px, 1fr));
-  }
-
-  .calendar-body-matrix {
-    grid-template-columns: 64px repeat(5, minmax(140px, 1fr));
-  }
-
-  .course-block {
-    left: 3px;
-    right: 3px;
-  }
+  .calendar-body-matrix { grid-template-columns: 64px repeat(5, minmax(140px, 1fr)); }
+  .course-block { left: 3px; right: 3px; }
 }
 
-/* --------------------------------------------------------------------------
-   Touch devices: shared tablet/phone behavior
-   -------------------------------------------------------------------------- */
+/* Shared touch behavior */
 @media (max-width: 1023px) {
-  .btn-icon,
-  .btn-nav,
-  .btn-remove-course,
-  .view-btn {
-    touch-action: manipulation;
-  }
+  .btn-icon, .btn-nav, .btn-remove-course, .view-btn { touch-action: manipulation; }
 
-  /* Avoid accidental horizontal page scrolling; scrollable widgets opt in. */
-  html,
-  body {
-    width: 100%;
-    min-width: 0;
-  }
+  html, body { width: 100%; min-width: 0; }
 
   .calendar-card {
     scrollbar-width: thin;
+    overscroll-behavior-x: contain;
   }
 }
 
-/* --------------------------------------------------------------------------
-   iPhone / small-screen layout: <=640px
-   -------------------------------------------------------------------------- */
+/* iPhone / small-screen layout */
 @media (max-width: 640px) {
   :root {
-    --mobile-gutter: max(12px, env(safe-area-inset-left));
+    --mobile-gutter-left: max(12px, env(safe-area-inset-left));
     --mobile-gutter-right: max(12px, env(safe-area-inset-right));
   }
 
-  html,
-  body {
+  html, body {
     width: 100%;
     min-width: 0;
     overflow-x: hidden;
   }
 
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+  body { padding-bottom: env(safe-area-inset-bottom); }
 
-  .app-header {
-    position: sticky;
-    top: 0;
-  }
+  .app-header { position: sticky; top: 0; }
 
   .header-container {
     min-height: 56px;
-    padding: 8px var(--mobile-gutter-right) 8px var(--mobile-gutter);
+    padding: 8px var(--mobile-gutter-right) 8px var(--mobile-gutter-left);
     gap: 8px;
   }
 
-  .brand-group {
-    min-width: 0;
-    gap: 8px;
-  }
-
-  .brand-logo {
-    width: 36px;
-    height: 36px;
-    flex: 0 0 36px;
-  }
-
-  .brand-logo svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .brand-text {
-    min-width: 0;
-  }
-
-  .brand-title {
-    font-size: 1.05rem;
-    white-space: nowrap;
-  }
-
-  .brand-badge {
-    display: none;
-  }
-
-  .header-actions {
-    gap: 4px;
-    flex: 0 0 auto;
-  }
+  .brand-group { min-width: 0; gap: 8px; }
+  .brand-logo { width: 36px; height: 36px; flex: 0 0 36px; }
+  .brand-logo svg { width: 22px; height: 22px; }
+  .brand-text { min-width: 0; }
+  .brand-title { font-size: 1.05rem; white-space: nowrap; }
+  .brand-badge { display: none; }
+  .header-actions { gap: 4px; flex: 0 0 auto; }
 
   .header-actions .btn-icon,
   .header-actions .btn-pill {
@@ -225,14 +140,12 @@
     padding: 0;
   }
 
-  .header-actions a.btn-icon {
-    display: none;
-  }
+  .header-actions a.btn-icon { display: none; }
 
   .app-layout {
     width: 100%;
     max-width: none;
-    padding: 10px var(--mobile-gutter-right) 20px var(--mobile-gutter);
+    padding: 10px var(--mobile-gutter-right) 20px var(--mobile-gutter-left);
   }
 
   .top-banner {
@@ -241,20 +154,9 @@
     border-radius: 16px;
   }
 
-  .banner-content {
-    display: block;
-  }
-
-  .banner-text h2 {
-    font-size: 1.15rem;
-    line-height: 1.35;
-    margin-bottom: 4px;
-  }
-
-  .banner-text p {
-    font-size: 0.82rem;
-    line-height: 1.5;
-  }
+  .banner-content { display: block; }
+  .banner-text h2 { font-size: 1.15rem; line-height: 1.35; margin-bottom: 4px; }
+  .banner-text p { font-size: .82rem; line-height: 1.5; }
 
   .banner-actions {
     display: grid;
@@ -263,20 +165,9 @@
     margin-top: 12px;
   }
 
-  .banner-actions .btn {
-    min-width: 0;
-    min-height: 46px;
-    padding-inline: 12px;
-  }
-
-  .banner-actions .btn-secondary {
-    width: 46px;
-    padding: 0;
-  }
-
-  .banner-actions .btn-secondary span {
-    display: none;
-  }
+  .banner-actions .btn { min-width: 0; min-height: 46px; padding-inline: 12px; }
+  .banner-actions .btn-secondary { width: 46px; padding: 0; }
+  .banner-actions .btn-secondary span { display: none; }
 
   .workspace-grid {
     display: flex;
@@ -285,12 +176,7 @@
     width: 100%;
   }
 
-  .sidebar-panel,
-  .results-toolbar,
-  .calendar-card,
-  .placeholder-card {
-    border-radius: 16px;
-  }
+  .sidebar-panel, .results-toolbar, .calendar-card, .placeholder-card { border-radius: 16px; }
 
   .sidebar-panel {
     width: 100%;
@@ -299,92 +185,40 @@
     display: flex;
   }
 
-  .panel-title-wrap h3 {
-    font-size: 1rem;
-  }
-
-  .status-badge {
-    font-size: 0.7rem;
-    white-space: nowrap;
-  }
+  .panel-title-wrap h3 { font-size: 1rem; }
+  .status-badge { font-size: .7rem; white-space: nowrap; }
 
   .form-inputs-row {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
-  .form-inputs-row .input-field:last-child {
-    grid-column: 1 / -1;
-  }
+  .form-inputs-row .input-field:last-child { grid-column: 1 / -1; }
 
-  .input-text,
-  .select-input,
-  .text-area-input {
+  .input-text, .select-input, .text-area-input {
     min-height: 46px;
     font-size: 16px;
     padding: 10px 12px;
   }
 
-  .input-field label {
-    font-size: 0.78rem;
-  }
-
-  .form-hint {
-    font-size: 0.7rem;
-  }
-
-  .btn {
-    min-height: 46px;
-    font-size: 0.9rem;
-  }
-
-  .btn-icon {
-    min-width: 44px;
-    min-height: 44px;
-  }
+  .input-field label { font-size: .78rem; }
+  .form-hint { font-size: .7rem; }
+  .btn { min-height: 46px; font-size: .9rem; }
+  .btn-icon { min-width: 44px; min-height: 44px; }
 
   .selected-courses-container {
     max-height: 240px;
+    overscroll-behavior: contain;
   }
 
-  .course-card-item {
-    min-height: 52px;
-    padding: 8px 10px;
-  }
+  .course-card-item { min-height: 52px; padding: 8px 10px; }
+  .btn-remove-course { min-width: 40px; min-height: 40px; }
 
-  .btn-remove-course {
-    min-width: 40px;
-    min-height: 40px;
-  }
-
-  .results-toolbar {
-    padding: 12px;
-    gap: 10px;
-  }
-
-  .filters-row,
-  .sub-toolbar {
-    display: flex;
-    align-items: stretch;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .filter-group,
-  .search-filter {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .filter-group {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-input-wrap,
-  .input-search {
-    min-height: 46px;
-  }
+  .results-toolbar { padding: 12px; gap: 10px; }
+  .filters-row, .sub-toolbar { display: flex; align-items: stretch; flex-direction: column; gap: 8px; }
+  .filter-group, .search-filter { width: 100%; min-width: 0; }
+  .filter-group { flex-direction: column; align-items: stretch; }
+  .search-input-wrap, .input-search { min-height: 46px; }
 
   .view-mode-toggle {
     width: 100%;
@@ -392,24 +226,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .view-btn {
-    min-height: 42px;
-    justify-content: center;
-  }
-
-  .schedule-pagination {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .btn-nav {
-    width: 44px;
-    height: 44px;
-  }
-
-  .schedule-stats {
-    flex-wrap: wrap;
-  }
+  .view-btn { min-height: 42px; justify-content: center; }
+  .schedule-pagination { width: 100%; justify-content: space-between; }
+  .btn-nav { width: 44px; height: 44px; }
+  .schedule-stats { flex-wrap: wrap; }
 
   .export-actions {
     width: 100%;
@@ -418,51 +238,31 @@
     gap: 8px;
   }
 
-  .btn-icon-labeled {
-    min-height: 44px;
-    justify-content: center;
-  }
+  .btn-icon-labeled { min-height: 44px; justify-content: center; }
 
   .calendar-card {
     padding: 8px;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
   }
 
-  .calendar-card > * {
-    min-width: 0;
+  .calendar-header-row, .calendar-body-matrix { width: max(100%, 720px); }
+  .calendar-header-row { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); }
+  .calendar-body-matrix { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); min-height: 540px; height: 540px; }
+
+  /* Keep the time axis visible while the five-day grid is touch-scrolled. */
+  .calendar-time-axis {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 15;
   }
 
-  .calendar-header-row,
-  .calendar-body-matrix {
-    width: max(100%, 720px);
-  }
-
-  .calendar-header-row {
-    grid-template-columns: 58px repeat(5, minmax(132px, 1fr));
-  }
-
-  .calendar-body-matrix {
-    grid-template-columns: 58px repeat(5, minmax(132px, 1fr));
-    min-height: 540px;
-    height: 540px;
-  }
-
-  .time-col-header,
-  .day-col-header {
-    padding: 10px 6px;
-    font-size: 0.78rem;
-  }
-
-  .hour-marker {
-    height: 54px;
-    font-size: 0.68rem;
-  }
-
-  .day-column-gridline {
-    height: 54px;
-  }
+  .time-col-header, .day-col-header { padding: 10px 6px; font-size: .78rem; }
+  .hour-marker, .day-column-gridline { height: 54px; }
+  .hour-marker { font-size: .68rem; }
 
   .course-block {
     left: 3px;
@@ -471,76 +271,32 @@
     border-radius: 10px;
   }
 
-  .course-block-title {
-    font-size: 0.78rem;
-  }
-
-  .course-block-code,
-  .course-block-time,
-  .course-block-instructor {
-    font-size: 0.64rem;
-  }
+  .course-block-title { font-size: .78rem; }
+  .course-block-code, .course-block-time, .course-block-instructor { font-size: .64rem; }
 
   .course-block-title,
   .course-block-instructor,
   .pagination-info,
   .panel-title-wrap h3,
   .banner-text h2,
-  .banner-text p {
-    overflow-wrap: anywhere;
-  }
+  .banner-text p { overflow-wrap: anywhere; }
 
-  .placeholder-container {
-    min-height: 300px;
-    padding: 8px;
-  }
-
-  .placeholder-card {
-    width: 100%;
-    padding: 2rem 1rem;
-  }
+  .placeholder-container { min-height: 300px; padding: 8px; }
+  .placeholder-card { width: 100%; padding: 2rem 1rem; }
 }
 
-/* Compact iPhone / SE-class screens. */
+/* Compact iPhone / SE-class screens */
 @media (max-width: 380px) {
-  .brand-title {
-    font-size: 0.98rem;
-  }
-
-  .header-actions .btn-icon,
-  .header-actions .btn-pill {
-    width: 38px;
-    min-width: 38px;
-  }
-
-  .banner-actions {
-    grid-template-columns: minmax(0, 1fr) 42px;
-  }
-
-  .form-inputs-row {
-    grid-template-columns: 1fr;
-  }
-
-  .form-inputs-row .input-field:last-child {
-    grid-column: auto;
-  }
-
-  .calendar-header-row,
-  .calendar-body-matrix {
-    width: max(100%, 670px);
-  }
-
-  .calendar-header-row {
-    grid-template-columns: 52px repeat(5, minmax(124px, 1fr));
-  }
-
-  .calendar-body-matrix {
-    grid-template-columns: 52px repeat(5, minmax(124px, 1fr));
-  }
+  .brand-title { font-size: .98rem; }
+  .header-actions .btn-icon, .header-actions .btn-pill { width: 38px; min-width: 38px; }
+  .banner-actions { grid-template-columns: minmax(0, 1fr) 42px; }
+  .form-inputs-row { grid-template-columns: 1fr; }
+  .form-inputs-row .input-field:last-child { grid-column: auto; }
+  .calendar-header-row, .calendar-body-matrix { width: max(100%, 670px); }
+  .calendar-header-row { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
+  .calendar-body-matrix { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .calendar-card {
-    scroll-behavior: auto;
-  }
+  .calendar-card { scroll-behavior: auto; }
 }
