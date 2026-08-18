@@ -44,12 +44,57 @@ html[dir="ltr"] .day-column-track { border-left: none; border-right: 1px solid v
 .course-block-time { font-family: var(--font-mono); font-size: .68rem; opacity: .9; direction: ltr; }
 .course-block-instructor { font-size: .72rem; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* iPhone calendar overrides must come after the base calendar rules. */
+/* Mobile: show one complete day at a time and let the user swipe between days.
+   This is deliberately different from squeezing all five days into tiny columns. */
 @media (max-width: 640px) {
-  .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; padding: 8px; }
-  .calendar-header-row, .calendar-body-matrix { width: max(100%, 720px); }
-  .calendar-header-row { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); }
-  .calendar-body-matrix { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); min-height: 540px; height: 540px; }
+  .calendar-card {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    padding: 8px;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x pan-y;
+  }
+
+  .calendar-header-row,
+  .calendar-body-matrix {
+    width: calc(58px + (5 * (100vw - 74px)));
+    max-width: none;
+  }
+
+  .calendar-header-row {
+    grid-template-columns: 58px repeat(5, minmax(calc(100vw - 74px), calc(100vw - 74px)));
+  }
+
+  .calendar-body-matrix {
+    grid-template-columns: 58px repeat(5, minmax(calc(100vw - 74px), calc(100vw - 74px)));
+    min-height: 540px;
+    height: 540px;
+  }
+
+  /* Keep the time axis visible while swiping through the days. */
+  .calendar-time-axis,
+  .time-col-header {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 30;
+  }
+
+  .calendar-time-axis {
+    box-shadow: 2px 0 8px rgba(0,0,0,.08);
+  }
+
+  .time-col-header {
+    box-shadow: 2px 0 8px rgba(0,0,0,.08);
+  }
+
+  .day-col-header,
+  .day-column-track {
+    scroll-snap-align: start;
+  }
+
   .time-col-header, .day-col-header { padding: 10px 6px; font-size: .78rem; }
   .hour-marker, .day-column-gridline { height: 54px; }
   .hour-marker { font-size: .68rem; }
@@ -59,9 +104,18 @@ html[dir="ltr"] .day-column-track { border-left: none; border-right: 1px solid v
 }
 
 @media (max-width: 380px) {
-  .calendar-header-row, .calendar-body-matrix { width: max(100%, 670px); }
-  .calendar-header-row { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
-  .calendar-body-matrix { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
+  .calendar-header-row,
+  .calendar-body-matrix {
+    width: calc(52px + (5 * (100vw - 66px)));
+  }
+
+  .calendar-header-row {
+    grid-template-columns: 52px repeat(5, minmax(calc(100vw - 66px), calc(100vw - 66px)));
+  }
+
+  .calendar-body-matrix {
+    grid-template-columns: 52px repeat(5, minmax(calc(100vw - 66px), calc(100vw - 66px)));
+  }
 }
 
 @media print {
