@@ -1,3 +1,5 @@
+@import url('./mobile.css');
+
 /* Weekly Visual Calendar Styles */
 
 .calendar-card {
@@ -11,7 +13,6 @@
   flex-direction: column;
 }
 
-/* Header: Time Column + 5 Days (Sun to Thu) */
 .calendar-header-row {
   display: grid;
   grid-template-columns: 75px repeat(5, 1fr);
@@ -32,11 +33,8 @@
   color: var(--color-text-secondary);
 }
 
-.day-col-header {
-  color: var(--color-text-primary);
-}
+.day-col-header { color: var(--color-text-primary); }
 
-/* Calendar Matrix Area */
 .calendar-body-matrix {
   position: relative;
   display: grid;
@@ -47,11 +45,9 @@
   border-bottom-right-radius: var(--radius-lg);
   background: var(--color-bg-base);
   min-height: 600px;
-  /* 10 hours: 08:00 to 18:00 -> 600px height (60px per hour) */
   height: 600px;
 }
 
-/* Hourly Background Grid */
 .calendar-time-axis {
   display: flex;
   flex-direction: column;
@@ -59,10 +55,7 @@
   background: var(--grid-hour-bg);
 }
 
-html[dir="ltr"] .calendar-time-axis {
-  border-left: none;
-  border-right: 1px solid var(--color-border);
-}
+html[dir="ltr"] .calendar-time-axis { border-left: none; border-right: 1px solid var(--color-border); }
 
 .hour-marker {
   height: 60px;
@@ -77,21 +70,9 @@ html[dir="ltr"] .calendar-time-axis {
   user-select: none;
 }
 
-.day-column-track {
-  position: relative;
-  height: 100%;
-  border-left: 1px solid var(--grid-line-color);
-}
-
-html[dir="ltr"] .day-column-track {
-  border-left: none;
-  border-right: 1px solid var(--grid-line-color);
-}
-
-.day-column-track:last-child {
-  border-left: none;
-  border-right: none;
-}
+.day-column-track { position: relative; height: 100%; border-left: 1px solid var(--grid-line-color); }
+html[dir="ltr"] .day-column-track { border-left: none; border-right: 1px solid var(--grid-line-color); }
+.day-column-track:last-child { border-left: none; border-right: none; }
 
 .day-column-gridline {
   position: absolute;
@@ -102,7 +83,6 @@ html[dir="ltr"] .day-column-track {
   pointer-events: none;
 }
 
-/* Visual Course Blocks */
 .course-block {
   position: absolute;
   left: 4px;
@@ -121,96 +101,20 @@ html[dir="ltr"] .day-column-track {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.course-block:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  z-index: 20;
-}
+.course-block:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,.4); z-index: 20; }
+.course-block-title { font-weight: 800; font-size: 0.85rem; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.course-block-code { font-family: var(--font-mono); font-size: 0.72rem; opacity: .9; font-weight: 600; }
+.course-block-footer { display: flex; align-items: center; justify-content: space-between; gap: .25rem; margin-top: .2rem; }
+.course-block-section { font-size: .7rem; font-weight: 700; background: rgba(0,0,0,.25); padding: .1rem .35rem; border-radius: var(--radius-xs); font-family: var(--font-mono); }
+.course-block-time { font-family: var(--font-mono); font-size: .68rem; opacity: .9; direction: ltr; }
+.course-block-instructor { font-size: .72rem; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.course-block-title {
-  font-weight: 800;
-  font-size: 0.85rem;
-  line-height: 1.2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.course-block-code {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  opacity: 0.9;
-  font-weight: 600;
-}
-
-.course-block-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
-  margin-top: 0.2rem;
-}
-
-.course-block-section {
-  font-size: 0.7rem;
-  font-weight: 700;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 0.1rem 0.35rem;
-  border-radius: var(--radius-xs);
-  font-family: var(--font-mono);
-}
-
-.course-block-time {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  opacity: 0.9;
-  direction: ltr;
-}
-
-.course-block-instructor {
-  font-size: 0.72rem;
-  opacity: 0.9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Print Styles */
 @media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
-
-  .app-header, .top-banner, .sidebar-panel, .results-toolbar, .toast-container {
-    display: none !important;
-  }
-
-  .app-layout {
-    max-width: 100% !important;
-    padding: 0 !important;
-  }
-
-  .workspace-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .calendar-card {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-  }
-
-  .calendar-body-matrix {
-    border: 1px solid #000000 !important;
-    height: 700px !important;
-  }
-
-  .course-block {
-    box-shadow: none !important;
-    border: 1px solid #000000 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+  body { background: #fff !important; color: #000 !important; }
+  .app-header, .top-banner, .sidebar-panel, .results-toolbar, .toast-container { display: none !important; }
+  .app-layout { max-width: 100% !important; padding: 0 !important; }
+  .workspace-grid { grid-template-columns: 1fr !important; }
+  .calendar-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+  .calendar-body-matrix { border: 1px solid #000 !important; height: 700px !important; }
+  .course-block { box-shadow: none !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
