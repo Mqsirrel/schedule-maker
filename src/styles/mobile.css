@@ -1,9 +1,159 @@
 /*
- * iPhone / small-screen refinement layer.
- * Loaded last so mobile behavior overrides desktop composition without
- * changing the scheduling logic or desktop layout.
+ * Responsive refinement layer.
+ *
+ * This is intentionally a responsive system, not a phone-only override.
+ * Desktop remains the baseline; tablet and phone progressively reorganize
+ * the same components around available space and touch constraints.
  */
 
+/* --------------------------------------------------------------------------
+   Large laptop / desktop refinements
+   -------------------------------------------------------------------------- */
+@media (min-width: 1280px) {
+  .app-layout {
+    padding-inline: clamp(20px, 3vw, 48px);
+  }
+
+  .workspace-grid {
+    gap: clamp(16px, 2vw, 28px);
+  }
+
+  .calendar-card {
+    min-width: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tablet: 641px–1023px
+   Keep the desktop information architecture, but avoid cramped sidebars and
+   toolbars. This is a layout adaptation, not a shrunken desktop.
+   -------------------------------------------------------------------------- */
+@media (min-width: 641px) and (max-width: 1023px) {
+  :root {
+    --responsive-gutter: clamp(16px, 3vw, 28px);
+  }
+
+  html,
+  body {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .header-container {
+    padding-inline: var(--responsive-gutter);
+    gap: 12px;
+  }
+
+  .app-layout {
+    width: 100%;
+    max-width: none;
+    padding: 16px var(--responsive-gutter) 28px;
+  }
+
+  .top-banner {
+    margin-bottom: 14px;
+  }
+
+  .banner-content {
+    gap: 16px;
+  }
+
+  /* Give the main workspace priority. The input panel becomes a full-width
+     strip above results instead of competing with a narrow calendar. */
+  .workspace-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .sidebar-panel {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 14px 20px;
+  }
+
+  .sidebar-panel > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .form-inputs-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .results-toolbar {
+    gap: 12px;
+  }
+
+  .filters-row,
+  .sub-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-group,
+  .search-filter {
+    min-width: 180px;
+    flex: 1 1 180px;
+  }
+
+  .export-actions {
+    margin-inline-start: auto;
+  }
+
+  .calendar-card {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-header-row,
+  .calendar-body-matrix {
+    min-width: 760px;
+  }
+
+  .calendar-header-row {
+    grid-template-columns: 64px repeat(5, minmax(140px, 1fr));
+  }
+
+  .calendar-body-matrix {
+    grid-template-columns: 64px repeat(5, minmax(140px, 1fr));
+  }
+
+  .course-block {
+    left: 3px;
+    right: 3px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Touch devices: shared tablet/phone behavior
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .btn-icon,
+  .btn-nav,
+  .btn-remove-course,
+  .view-btn {
+    touch-action: manipulation;
+  }
+
+  /* Avoid accidental horizontal page scrolling; scrollable widgets opt in. */
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .calendar-card {
+    scrollbar-width: thin;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   iPhone / small-screen layout: <=640px
+   -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
   :root {
     --mobile-gutter: max(12px, env(safe-area-inset-left));
@@ -21,7 +171,6 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Keep the sticky header compact without hiding essential controls. */
   .app-header {
     position: sticky;
     top: 0;
@@ -76,8 +225,6 @@
     padding: 0;
   }
 
-  /* The repository link is useful on desktop but not part of the primary
-     mobile task. Keep the header visually calm and give the app more room. */
   .header-actions a.btn-icon {
     display: none;
   }
@@ -88,7 +235,6 @@
     padding: 10px var(--mobile-gutter-right) 20px var(--mobile-gutter);
   }
 
-  /* Turn the desktop hero into a compact action surface. */
   .top-banner {
     margin-bottom: 10px;
     padding: 14px;
@@ -132,7 +278,6 @@
     display: none;
   }
 
-  /* Mobile is a single-column task flow. */
   .workspace-grid {
     display: flex;
     flex-direction: column;
@@ -151,6 +296,7 @@
     width: 100%;
     padding: 14px;
     gap: 12px;
+    display: flex;
   }
 
   .panel-title-wrap h3 {
@@ -162,8 +308,6 @@
     white-space: nowrap;
   }
 
-  /* Stack course inputs: iOS keyboards need comfortable fields, not tiny
-     three-column desktop inputs. */
   .form-inputs-row {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
@@ -177,7 +321,7 @@
   .select-input,
   .text-area-input {
     min-height: 46px;
-    font-size: 16px; /* prevents iOS Safari input zoom */
+    font-size: 16px;
     padding: 10px 12px;
   }
 
@@ -213,7 +357,6 @@
     min-height: 40px;
   }
 
-  /* Results controls become a vertical, thumb-friendly toolbar. */
   .results-toolbar {
     padding: 12px;
     gap: 10px;
@@ -280,12 +423,11 @@
     justify-content: center;
   }
 
-  /* Calendar: preserve the desktop time geometry but make it a deliberate
-     horizontal viewport instead of crushing five days into unreadable cells. */
   .calendar-card {
     padding: 8px;
     width: 100%;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .calendar-card > * {
@@ -307,19 +449,10 @@
     height: 540px;
   }
 
-  .calendar-card {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
-
   .time-col-header,
   .day-col-header {
     padding: 10px 6px;
     font-size: 0.78rem;
-    position: sticky;
-    top: 0;
-    z-index: 25;
   }
 
   .hour-marker {
@@ -348,7 +481,6 @@
     font-size: 0.64rem;
   }
 
-  /* Prevent long Arabic/English strings from pushing the viewport wider. */
   .course-block-title,
   .course-block-instructor,
   .pagination-info,
@@ -369,7 +501,7 @@
   }
 }
 
-/* Narrow iPhone SE / older compact phones. */
+/* Compact iPhone / SE-class screens. */
 @media (max-width: 380px) {
   .brand-title {
     font-size: 0.98rem;
