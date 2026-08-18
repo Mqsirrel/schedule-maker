@@ -14,7 +14,7 @@ export class ImageExporter {
       // Calculate high DPI scale (2x for retina quality)
       const scale = 2;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const bgColor = isDark ? '#171a23' : '#ffffff';
+      const bgColor = isDark ? '#10110f' : '#f3f0e8';
 
       const dataUrl = await toPng(elementToCapture, {
         quality: 0.95,

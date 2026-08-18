@@ -12,16 +12,16 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-pill: 9999px;
-  --course-color-1: #4f86d9;
-  --course-color-2: #39a879;
-  --course-color-3: #c99028;
-  --course-color-4: #8069b8;
-  --course-color-5: #c86d8f;
-  --course-color-6: #3d9eaf;
-  --course-color-7: #cf7650;
-  --course-color-8: #439b91;
-  --course-color-9: #6e78bd;
-  --course-color-10: #7ca64b;
+  --course-color-1: #2d6a9f;
+  --course-color-2: #2e7d58;
+  --course-color-3: #c26135;
+  --course-color-4: #8d4f6e;
+  --course-color-5: #a87928;
+  --course-color-6: #2b7a87;
+  --course-color-7: #645695;
+  --course-color-8: #3c7d6e;
+  --course-color-9: #9e5b41;
+  --course-color-10: #5c7540;
 }
 
 html[data-theme="dark"] {
