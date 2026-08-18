@@ -24,90 +24,45 @@
   overflow: hidden;
 }
 
-.time-col-header, .day-col-header {
-  background: var(--color-bg-surface-hover);
-  padding: 0.85rem 0.5rem;
-  text-align: center;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-text-secondary);
-}
-
+.time-col-header, .day-col-header { background: var(--color-bg-surface-hover); padding: .85rem .5rem; text-align: center; font-weight: 700; font-size: .95rem; color: var(--color-text-secondary); }
 .day-col-header { color: var(--color-text-primary); }
 
-.calendar-body-matrix {
-  position: relative;
-  display: grid;
-  grid-template-columns: 75px repeat(5, 1fr);
-  border: 1px solid var(--color-border);
-  border-top: none;
-  border-bottom-left-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
-  background: var(--color-bg-base);
-  min-height: 600px;
-  height: 600px;
-}
-
-.calendar-time-axis {
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid var(--color-border);
-  background: var(--grid-hour-bg);
-}
-
+.calendar-body-matrix { position: relative; display: grid; grid-template-columns: 75px repeat(5, 1fr); border: 1px solid var(--color-border); border-top: none; border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); background: var(--color-bg-base); min-height: 600px; height: 600px; }
+.calendar-time-axis { display: flex; flex-direction: column; border-left: 1px solid var(--color-border); background: var(--grid-hour-bg); }
 html[dir="ltr"] .calendar-time-axis { border-left: none; border-right: 1px solid var(--color-border); }
-
-.hour-marker {
-  height: 60px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-  border-bottom: 1px dashed var(--grid-line-color);
-  padding-top: 0.25rem;
-  user-select: none;
-}
-
+.hour-marker { height: 60px; display: flex; align-items: flex-start; justify-content: center; font-family: var(--font-mono); font-size: .78rem; color: var(--color-text-muted); border-bottom: 1px dashed var(--grid-line-color); padding-top: .25rem; user-select: none; }
 .day-column-track { position: relative; height: 100%; border-left: 1px solid var(--grid-line-color); }
 html[dir="ltr"] .day-column-track { border-left: none; border-right: 1px solid var(--grid-line-color); }
 .day-column-track:last-child { border-left: none; border-right: none; }
-
-.day-column-gridline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 60px;
-  border-bottom: 1px dashed var(--grid-line-color);
-  pointer-events: none;
-}
-
-.course-block {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  border-radius: var(--radius-md);
-  padding: 0.5rem 0.6rem;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  z-index: 10;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
+.day-column-gridline { position: absolute; left: 0; right: 0; height: 60px; border-bottom: 1px dashed var(--grid-line-color); pointer-events: none; }
+.course-block { position: absolute; left: 4px; right: 4px; border-radius: var(--radius-md); padding: .5rem .6rem; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,.25); display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; cursor: pointer; transition: all var(--transition-fast); z-index: 10; border: 1px solid rgba(255,255,255,.2); }
 .course-block:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,.4); z-index: 20; }
-.course-block-title { font-weight: 800; font-size: 0.85rem; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.course-block-code { font-family: var(--font-mono); font-size: 0.72rem; opacity: .9; font-weight: 600; }
+.course-block-title { font-weight: 800; font-size: .85rem; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.course-block-code { font-family: var(--font-mono); font-size: .72rem; opacity: .9; font-weight: 600; }
 .course-block-footer { display: flex; align-items: center; justify-content: space-between; gap: .25rem; margin-top: .2rem; }
 .course-block-section { font-size: .7rem; font-weight: 700; background: rgba(0,0,0,.25); padding: .1rem .35rem; border-radius: var(--radius-xs); font-family: var(--font-mono); }
 .course-block-time { font-family: var(--font-mono); font-size: .68rem; opacity: .9; direction: ltr; }
 .course-block-instructor { font-size: .72rem; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* iPhone calendar overrides must come after the base calendar rules. */
+@media (max-width: 640px) {
+  .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; padding: 8px; }
+  .calendar-header-row, .calendar-body-matrix { width: max(100%, 720px); }
+  .calendar-header-row { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); }
+  .calendar-body-matrix { grid-template-columns: 58px repeat(5, minmax(132px, 1fr)); min-height: 540px; height: 540px; }
+  .time-col-header, .day-col-header { padding: 10px 6px; font-size: .78rem; }
+  .hour-marker, .day-column-gridline { height: 54px; }
+  .hour-marker { font-size: .68rem; }
+  .course-block { left: 3px; right: 3px; padding: 6px 7px; border-radius: 10px; }
+  .course-block-title { font-size: .78rem; }
+  .course-block-code, .course-block-time, .course-block-instructor { font-size: .64rem; }
+}
+
+@media (max-width: 380px) {
+  .calendar-header-row, .calendar-body-matrix { width: max(100%, 670px); }
+  .calendar-header-row { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
+  .calendar-body-matrix { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
+}
 
 @media print {
   body { background: #fff !important; color: #000 !important; }
