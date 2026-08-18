@@ -1,0 +1,74 @@
+/* Thmanyah Typography Webfont System */
+
+@font-face {
+  font-family: 'Thmanyah Sans';
+  src: url('/fonts/Thmanyah-Sans-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Sans';
+  src: url('/fonts/Thmanyah-Sans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Sans';
+  src: url('/fonts/Thmanyah-Sans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Sans';
+  src: url('/fonts/Thmanyah-Sans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Serif';
+  src: url('/fonts/Thmanyah-Serif-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Serif';
+  src: url('/fonts/Thmanyah-Serif-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah Display';
+  src: url('/fonts/Thmanyah-Display-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Generic Fallback Family Alias */
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/Thmanyah-Sans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/Thmanyah-Sans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
