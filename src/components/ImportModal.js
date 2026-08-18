@@ -29,7 +29,6 @@ export class ImportModal {
   }
 
   _addUrlImportTab() {
-    // Build this tab in JS so the existing static HTML stays backwards-compatible.
     const tabs = this.modal.querySelector('.modal-tabs');
     if (!tabs) return;
 
@@ -57,6 +56,22 @@ export class ImportModal {
       <div id="urlImportStatus" class="url-import-status" role="status" aria-live="polite" hidden></div>
     `;
     this.modal.querySelector('.modal-body')?.appendChild(this.contentUrl);
+
+    const style = document.createElement('style');
+    style.textContent = `
+      .url-import-content { padding-top: .25rem; }
+      .url-import-row { display: grid; grid-template-columns: 1fr auto; gap: .65rem; align-items: stretch; }
+      .url-import-row .input-text { min-width: 0; direction: ltr; text-align: left; }
+      .url-import-row .btn { white-space: nowrap; }
+      .url-import-hint { margin: .65rem 0 0; color: var(--color-text-secondary); font-size: .82rem; line-height: 1.55; }
+      .url-import-status { margin-top: .75rem; padding: .7rem .8rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-base); color: var(--color-text-secondary); font-size: .82rem; line-height: 1.5; }
+      .url-import-status.is-error { border-color: var(--color-danger); color: var(--color-danger); }
+      @media (max-width: 600px) {
+        .url-import-row { grid-template-columns: 1fr; }
+        .url-import-row .btn { width: 100%; min-height: 44px; }
+      }
+    `;
+    this.modal.appendChild(style);
 
     this.inputImportUrl = this.contentUrl.querySelector('#inputImportUrl');
     this.btnFetchImportUrl = this.contentUrl.querySelector('#btnFetchImportUrl');
@@ -160,22 +175,20 @@ export class ImportModal {
     try {
       const { html } = await fetchHtmlFromUrl(rawUrl);
       const result = TimetableParser.parseHtml(html);
-      if (!result.success || result.sections.length === 0) {
-        throw new Error('NO_TIMETABLE_DATA');
-      }
+      if (!result.success || result.sections.length === 0) throw new Error('NO_TIMETABLE_DATA');
 
       this.notification?.showSuccess(t('toast_timetable_loaded', { count: result.sections.length }));
       this.onTimetableLoaded(result.sections);
       this.close();
     } catch (error) {
-      const key = error.message === 'CORS_OR_NETWORK'
+      const message = error.message === 'CORS_OR_NETWORK'
         ? 'الرابط رفض القراءة من المتصفح (CORS)، أو تعذر الاتصال. إذا كانت الصفحة تتطلب تسجيل دخول، احفظ HTML أو الصقه هنا.'
         : error.message === 'TIMEOUT'
           ? 'انتهت مهلة جلب الصفحة. جرّب مرة ثانية أو استخدم ملف HTML.'
           : error.message === 'NO_TIMETABLE_DATA'
             ? 'تم جلب الصفحة، لكن لم نجد بيانات جدول يمكن قراءتها فيها.'
             : 'الرابط غير صالح أو غير مدعوم.';
-      this._setUrlStatus(key, true);
+      this._setUrlStatus(message, true);
     } finally {
       this._setUrlLoading(false);
     }
