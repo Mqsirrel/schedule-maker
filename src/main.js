@@ -11,6 +11,7 @@ import { getSampleSections } from './engine/sampleData.js';
 import { IcsExporter } from './utils/icsExporter.js';
 import { ImageExporter } from './utils/imageExporter.js';
 import { AppStorage } from './utils/storage.js';
+import { normalizeArabic, diagnosePairwiseConflicts } from './engine/scheduleUtils.js';
 import { t, getLang, setLang, updateDOMTranslations } from './i18n/translations.js';
 
 class ScheduleMakerApp {
@@ -83,9 +84,11 @@ class ScheduleMakerApp {
     this.valDaysOff = document.getElementById('valDaysOff');
     this.valTotalGaps = document.getElementById('valTotalGaps');
 
+    this.btnCopyCrns = document.getElementById('btnCopyCrns');
     this.btnBookmark = document.getElementById('btnBookmarkSchedule');
     this.btnExportPng = document.getElementById('btnExportImage');
     this.btnExportIcs = document.getElementById('btnExportIcs');
+    this.conflictDiagnosticBox = document.getElementById('conflictDiagnosticBox');
 
     this.courseDetailModal = document.getElementById('courseDetailModal');
     this.courseDetailBody = document.getElementById('courseDetailBody');
@@ -120,6 +123,8 @@ class ScheduleMakerApp {
       } else if (e.key === 'ArrowLeft') {
         const delta = getLang() === 'ar' ? 1 : -1;
         this.navigateSchedule(delta);
+      } else if (e.key === 'b' || e.key === 'B' || e.key === 'لا') {
+        this.toggleCurrentBookmark();
       } else if (e.key === 'Escape') {
         this.importModal.close();
         this.helpModal.close();
@@ -141,7 +146,10 @@ class ScheduleMakerApp {
     this.btnPrevSchedule.addEventListener('click', () => this.navigateSchedule(-1));
     this.btnNextSchedule.addEventListener('click', () => this.navigateSchedule(1));
 
-    // Export & Bookmark
+    // Export & Bookmark & Copy CRNs
+    if (this.btnCopyCrns) {
+      this.btnCopyCrns.addEventListener('click', () => this.copyCurrentScheduleCrns());
+    }
     this.btnBookmark.addEventListener('click', () => this.toggleCurrentBookmark());
     this.btnExportPng.addEventListener('click', () => this.exportCurrentSchedulePng());
     this.btnExportIcs.addEventListener('click', () => this.exportCurrentScheduleIcs());
@@ -219,8 +227,40 @@ class ScheduleMakerApp {
     if (schedules.length === 0) {
       this.notification.showError(t('toast_no_schedules_found'));
       this.filteredSchedules = [];
+
+      // Run smart pairwise conflict diagnosis
+      const bottlenecks = diagnosePairwiseConflicts(this.wantedCourseGroups);
+      if (bottlenecks.length > 0 && this.conflictDiagnosticBox) {
+        let diagHtml = `
+          <div class="diagnostic-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <strong>${t('conflict_diagnostic_title')}</strong>
+          </div>
+          <ul class="diagnostic-list">
+        `;
+        for (const b of bottlenecks) {
+          diagHtml += `<li>${t('conflict_between_courses', { c1: `<strong>${this._escapeHtml(b.courseA)}</strong>`, c2: `<strong>${this._escapeHtml(b.courseB)}</strong>` })}</li>`;
+        }
+        diagHtml += `
+          </ul>
+          <p class="diagnostic-tip">💡 نصيحة: جرّب إزالة إحدى المادتين المتعارضتين أو تفعيل خيار الشعب الممتلئة لإيجاد جدول متوافق.</p>
+        `;
+        this.conflictDiagnosticBox.innerHTML = diagHtml;
+        this.conflictDiagnosticBox.style.display = 'block';
+      } else if (this.conflictDiagnosticBox) {
+        this.conflictDiagnosticBox.style.display = 'none';
+      }
+
       this._updateDisplayState();
       return;
+    }
+
+    if (this.conflictDiagnosticBox) {
+      this.conflictDiagnosticBox.style.display = 'none';
     }
 
     this.notification.playChime();
@@ -249,14 +289,19 @@ class ScheduleMakerApp {
       result = result.filter(s => s.metrics.daysOffCount >= 3);
     }
 
-    // Filter by Search Query (Doctor or Section)
+    // Filter by Search Query with Arabic normalization
     if (filters.query) {
-      const q = filters.query.toLowerCase();
+      const q = normalizeArabic(filters.query);
       result = result.filter(s => {
         return s.sections.some(sec => {
-          return (sec.instructor && sec.instructor.toLowerCase().includes(q))
-            || (sec.section && sec.section.toLowerCase().includes(q))
-            || (sec.courseName && sec.courseName.toLowerCase().includes(q));
+          const instructorNorm = normalizeArabic(sec.instructor);
+          const sectionNorm = normalizeArabic(sec.section);
+          const courseNameNorm = normalizeArabic(sec.courseName);
+          const codeNorm = normalizeArabic(sec.courseKey);
+          return instructorNorm.includes(q)
+            || sectionNorm.includes(q)
+            || courseNameNorm.includes(q)
+            || codeNorm.includes(q);
         });
       });
     }
@@ -392,6 +437,54 @@ class ScheduleMakerApp {
     const added = AppStorage.toggleBookmark(current);
     this.btnBookmark.classList.toggle('bookmarked', added);
     this.notification.showSuccess(added ? 'تمت إضافة الجدول للمفضلة' : 'تمت إزالة الجدول من المفضلة');
+  }
+
+  copyCurrentScheduleCrns() {
+    if (this.filteredSchedules.length === 0) return;
+    const currentSchedule = this.filteredSchedules[this.currentScheduleIndex];
+    if (!currentSchedule || !currentSchedule.sections) return;
+
+    // Build human-readable breakdown and clean comma-separated CRN list
+    const sectionLines = currentSchedule.sections.map(s => {
+      const code = s.courseKey || `${s.courseCode || ''} ${s.courseNumber || ''}`.trim();
+      const sec = s.section ? `(شعبة ${s.section})` : '';
+      const name = s.courseName ? `- ${s.courseName}` : '';
+      return `• ${code} ${sec} ${name}`.trim();
+    }).join('\n');
+
+    const rawCrns = currentSchedule.sections
+      .map(s => s.section)
+      .filter(Boolean)
+      .join(', ');
+
+    const payload = `${sectionLines}\n\nأرقام الشعب (CRNs):\n${rawCrns}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(payload).then(() => {
+        this.notification.showSuccess(t('toast_crns_copied'));
+      }).catch(() => {
+        this._fallbackCopy(payload);
+      });
+    } else {
+      this._fallbackCopy(payload);
+    }
+  }
+
+  _fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      this.notification.showSuccess(t('toast_crns_copied'));
+    } catch {
+      this.notification.showInfo(text);
+    }
+    document.body.removeChild(ta);
   }
 
   async exportCurrentSchedulePng() {

@@ -882,3 +882,54 @@ html[dir="ltr"] .toast--error {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Copy CRNs Button Highlight */
+.btn-copy-crns-highlight {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.btn-copy-crns-highlight:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Conflict Diagnostic Alert Box */
+.conflict-diagnostic-card {
+  width: 100%;
+  max-width: 620px;
+  margin: 1.5rem auto 0;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-danger-subtle);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  text-align: start;
+  animation: fadeIn var(--transition-fast);
+}
+
+.diagnostic-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-danger);
+  margin-bottom: 0.6rem;
+}
+
+.diagnostic-list {
+  padding-inline-start: 1.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.diagnostic-tip {
+  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  border-top: 1px dashed rgba(214, 101, 92, 0.3);
+  padding-top: 0.5rem;
+}

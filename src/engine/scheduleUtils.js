@@ -80,3 +80,77 @@ export function rankSchedules(schedules, weights) {
   });
   return schedules;
 }
+
+/**
+ * Normalizes Arabic text for tolerant search matching (Alef, Yaa, Taa Marbuta, diacritics).
+ * @param {string} text
+ * @returns {string}
+ */
+export function normalizeArabic(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/[إأآا]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[\u064B-\u065F\u0670]/g, '') // remove tashkeel
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Checks if two sections conflict temporally on any overlapping day.
+ * @param {object} s1
+ * @param {object} s2
+ * @returns {boolean}
+ */
+export function doSectionsOverlap(s1, s2) {
+  if (!s1.days || !s2.days || !s1.timeSlots || !s2.timeSlots) return false;
+  const commonDays = s1.days.filter(d => s2.days.includes(d));
+  if (commonDays.length === 0) return false;
+
+  for (const slotA of s1.timeSlots) {
+    for (const slotB of s2.timeSlots) {
+      if (Math.max(slotA.startMinutes, slotB.startMinutes) < Math.min(slotA.endMinutes, slotB.endMinutes)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Diagnoses root-cause pairwise bottlenecks when 0 schedules are found.
+ * @param {Array<{ courseId: string, courseName: string, sections: Array }>} courseGroups
+ * @returns {Array<{ courseA: string, courseB: string }>}
+ */
+export function diagnosePairwiseConflicts(courseGroups) {
+  if (!courseGroups || courseGroups.length < 2) return [];
+  const conflicts = [];
+
+  for (let i = 0; i < courseGroups.length; i++) {
+    for (let j = i + 1; j < courseGroups.length; j++) {
+      const g1 = courseGroups[i];
+      const g2 = courseGroups[j];
+      if (!g1.sections || g1.sections.length === 0 || !g2.sections || g2.sections.length === 0) continue;
+
+      let allOverlap = true;
+      for (const s1 of g1.sections) {
+        for (const s2 of g2.sections) {
+          if (!doSectionsOverlap(s1, s2)) {
+            allOverlap = false;
+            break;
+          }
+        }
+        if (!allOverlap) break;
+      }
+
+      if (allOverlap) {
+        const name1 = g1.courseName || g1.courseId || `Course ${i + 1}`;
+        const name2 = g2.courseName || g2.courseId || `Course ${j + 1}`;
+        conflicts.push({ courseA: name1, courseB: name2 });
+      }
+    }
+  }
+
+  return conflicts;
+}

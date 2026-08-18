@@ -333,6 +333,14 @@
 
             <!-- Export Actions -->
             <div class="export-actions">
+              <button id="btnCopyCrns" class="btn-icon-labeled btn-copy-crns-highlight" title="نسخ أرقام الشُعب للـ EAS" data-i18n-title="btn_copy_crns">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                </svg>
+                <span data-i18n="btn_copy_crns">نسخ أرقام الشُعب (CRNs)</span>
+              </button>
+
               <button id="btnBookmarkSchedule" class="btn-icon-labeled" title="حفظ في المفضلة" data-i18n-title="btn_bookmark">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -357,13 +365,15 @@
                 </svg>
                 <span data-i18n="btn_export_ics">تصدير للتقويم</span>
               </button>
-
             </div>
           </div>
         </div>
 
         <!-- Schedule Visual Display Containers -->
         <div class="results-content">
+          <!-- Conflict Diagnostic Alert (When 0 schedules found) -->
+          <div id="conflictDiagnosticBox" class="conflict-diagnostic-card" style="display: none;"></div>
+
           <!-- State 1: Placeholder Before Generation -->
           <div class="placeholder-container" id="resultsPlaceholder">
             <div class="placeholder-card">

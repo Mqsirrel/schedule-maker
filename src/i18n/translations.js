@@ -62,6 +62,10 @@ export const translations = {
 
     btn_export_png: "تصدير صورة",
     btn_export_ics: "تصدير للتقويم",
+    btn_copy_crns: "نسخ أرقام الشُعب (CRNs)",
+    toast_crns_copied: "تم نسخ أرقام الشُعب إلى الحافظة بنجاح للتسجيل السريع!",
+    conflict_diagnostic_title: "تشخيص سبب عدم توفر جدول:",
+    conflict_between_courses: "تعارض زمني حتمي بين مادة {c1} ومادة {c2}.",
 
     // Days of week
     col_time: "الوقت",
@@ -185,6 +189,10 @@ export const translations = {
 
     btn_export_png: "Export Image",
     btn_export_ics: "Export Calendar",
+    btn_copy_crns: "Copy CRNs",
+    toast_crns_copied: "Section CRNs copied to clipboard for quick registration!",
+    conflict_diagnostic_title: "Conflict Diagnostic:",
+    conflict_between_courses: "Direct time conflict between {c1} and {c2}.",
 
     // Days of week
     col_time: "Time",
