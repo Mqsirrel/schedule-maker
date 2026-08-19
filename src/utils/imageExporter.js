@@ -1,49 +1,55 @@
-// High-Resolution Image Exporter for WhatsApp & Gallery Sharing
-import { toPng } from 'html-to-image';
+// Dedicated schedule image exporter for clean, device-independent sharing
+import { ScheduleImageRenderer } from './scheduleImageRenderer.js';
 
 export class ImageExporter {
   /**
-   * Captures the calendar grid as a high-resolution PNG image and triggers download.
-   * @param {HTMLElement} elementToCapture
-   * @param {string} filename
+   * Export the current schedule as a purpose-built PNG.
+   * The element argument is retained for backwards compatibility with the UI.
    */
-  static async exportToPng(elementToCapture, filename = 'ScheduleMaker_Timetable.png') {
-    if (!elementToCapture) return false;
+  static async exportToPng(_elementToCapture, filename = 'ScheduleMaker_Timetable.png') {
+    const app = window.app;
+    const schedule = app?.filteredSchedules?.[app.currentScheduleIndex];
+    if (!schedule?.sections?.length) return false;
 
     try {
-      // Calculate high DPI scale (2x for retina quality)
-      const scale = 2;
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const bgColor = isDark ? '#10110f' : '#f3f0e8';
-
-      const dataUrl = await toPng(elementToCapture, {
-        quality: 0.95,
-        pixelRatio: scale,
-        cacheBust: true,
-        backgroundColor: bgColor,
-        style: {
-          transform: 'none',
-          borderRadius: '16px',
-          padding: '1.25rem'
-        },
-        filter: (node) => {
-          // Filter out unwanted UI overlays if any
-          return !node.classList?.contains('no-export');
-        }
+      const compact = window.matchMedia?.('(max-width: 600px)').matches ?? window.innerWidth <= 600;
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const lang = document.documentElement.lang === 'en' ? 'en' : 'ar';
+      const canvas = ScheduleImageRenderer.render(schedule, {
+        compact,
+        theme,
+        lang,
+        scale: 2
       });
 
+      const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob(result => result ? resolve(result) : reject(new Error('Could not create PNG')), 'image/png');
+      });
 
-      const downloadLink = document.createElement('a');
-      downloadLink.download = filename;
-      downloadLink.href = dataUrl;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: lang === 'ar' ? 'الجدول الدراسي' : 'My Schedule',
+            files: [file]
+          });
+          return true;
+        } catch (error) {
+          if (error?.name === 'AbortError') return false;
+        }
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       return true;
     } catch (err) {
-      console.error('Failed to export PNG snapshot:', err);
-      // Fallback via printable window
-      window.print();
+      console.error('Failed to export schedule image:', err);
       return false;
     }
   }
