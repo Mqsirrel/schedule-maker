@@ -2,7 +2,13 @@
 import { ScheduleImageRenderer } from './scheduleImageRenderer.js';
 
 export class ImageExporter {
-  static async exportSchedule(schedule, filename = 'ScheduleMaker_Schedule.png') {
+  /**
+   * Export the current schedule as a purpose-built PNG.
+   * The element argument is retained for backwards compatibility with the UI.
+   */
+  static async exportToPng(_elementToCapture, filename = 'ScheduleMaker_Timetable.png') {
+    const app = window.app;
+    const schedule = app?.filteredSchedules?.[app.currentScheduleIndex];
     if (!schedule?.sections?.length) return false;
 
     try {
