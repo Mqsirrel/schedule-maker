@@ -28,7 +28,12 @@ export class ScheduleMakerApp {
 
   _init() {
     this.notification = new NotificationManager(); this.helpModal = new HelpModal();
-    this.importModal = new ImportModal({ notification: this.notification, onTimetableLoaded: s => this.onTimetableLoaded(s), onOpenHelp: () => this.helpModal.open() });
+    this.importModal = new ImportModal({
+      notification: this.notification,
+      onTimetableLoaded: s => this.onTimetableLoaded(s),
+      onCrnsImported: entries => this.onCrnsImported(entries),
+      onOpenHelp: () => this.helpModal.open()
+    });
     this.courseSelector = new CourseSelector({ notification: this.notification, onCoursesChange: g => this.onWantedCoursesChanged(g), onGenerate: () => this.generateSchedules() });
     this.calendarGrid = new CalendarGrid('calendarGridMatrix', { onCourseClick: s => this.showCourseDetailModal(s) }); this.tableView = new TableView('scheduleDetailTbody');
     this.filterBar = new FilterBar({ onFilterChange: f => this.applyFilters(f) });
@@ -50,6 +55,42 @@ export class ScheduleMakerApp {
   _bindEvents() { this.btnToggleTheme.addEventListener('click',()=>{const next=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);storageService.setTheme(next);}); this.btnToggleLang.addEventListener('click',()=>{setLang(getLang()==='ar'?'en':'ar');this.courseSelector._updateStatusBadge();this.renderCurrentSchedule();}); window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight')this.navigateSchedule(getLang()==='ar'?-1:1);else if(e.key==='ArrowLeft')this.navigateSchedule(getLang()==='ar'?1:-1);else if(e.key==='Escape'){this.importModal.close();this.helpModal.close();this.courseDetailView.close();}}); this.btnLoadDemo.addEventListener('click',()=>this.loadDemoDataset()); this.btnViewCalendar.addEventListener('click',()=>this.switchView('calendar')); this.btnViewTable.addEventListener('click',()=>this.switchView('table')); this.btnPrevSchedule.addEventListener('click',()=>this.navigateSchedule(-1)); this.btnNextSchedule.addEventListener('click',()=>this.navigateSchedule(1)); if(this.btnCopyCrns)this.btnCopyCrns.addEventListener('click',()=>this.copyCurrentScheduleCrns()); this.btnExportImage.addEventListener('click',()=>this.exportCurrentSchedulePng()); if(this.btnCloseCourseDetail)this.btnCloseCourseDetail.addEventListener('click',()=>this.courseDetailView.close()); }
   _checkCachedData(){const cached=storageService.getTimetable();if(cached?.length){this.timetableSections=cached;this.courseSelector.setTimetableData(cached);}this.wantedCourseGroups=this.courseSelector.getWantedCourseGroups();}
   onTimetableLoaded(sections){this.timetableSections=sections;storageService.saveTimetable(sections);this.courseSelector.setTimetableData(sections);}
+
+  onCrnsImported(entries) {
+    let imported = 0;
+    let skipped = 0;
+
+    for (const entry of entries) {
+      const matching = this.courseSelector.allSections.filter(sec =>
+        sec.courseCode?.toUpperCase() === entry.courseCode &&
+        sec.courseNumber === entry.courseNumber &&
+        sec.section?.toUpperCase() === entry.crn
+      );
+
+      if (!matching.length) {
+        skipped++;
+        continue;
+      }
+
+      const key = `${entry.courseCode}-${entry.courseNumber}`;
+      if (this.courseSelector.wantedCourses[key]) {
+        skipped++;
+        continue;
+      }
+
+      this.courseSelector.inputCode.value = entry.courseCode;
+      this.courseSelector.inputNumber.value = entry.courseNumber;
+      this.courseSelector.inputSection.value = entry.crn;
+      this.courseSelector.addCurrentCourse();
+      imported++;
+    }
+
+    if (imported > 0) this.generateSchedules();
+    if (skipped > 0) {
+      this.notification.showInfo(`${imported} مادة مستوردة، ${skipped} لم تطابق البيانات الحالية.`);
+    }
+  }
+
   loadDemoDataset(){this.courseSelector.clearAll();this.onTimetableLoaded(getSampleSections());setTimeout(()=>{const code=document.getElementById('courseCode'),number=document.getElementById('courseNumber');for(const[c,n]of[['CS','181'],['MATH','101'],['PHYS','101']]){code.value=c;number.value=n;this.courseSelector.addCurrentCourse();}this.notification.showSuccess(getLang()==='ar'?'تم تحميل بيانات تجريبية، ويتم الآن إنشاء جدول مناسب.':'Sample data loaded. Building a schedule now.');this.generateSchedules();},150);}
   onWantedCoursesChanged(groups){this.wantedCourseGroups=groups;if(!groups.length){this.state.resetResults();this.resultsView.updateVisibility();}}
   async generateSchedules(){if(!this.wantedCourseGroups.length)return;const result=await this.scheduleController.generate(this.wantedCourseGroups);if(!result.schedules.length){this.notification.showError(t('toast_no_schedules_found'));this.diagnosticsView.render(this.scheduleController.diagnoseConflicts(this.wantedCourseGroups));this.resultsView.updateVisibility();return;}this.diagnosticsView.render([]);this.notification.playChime();this.notification.showSuccess(t('toast_schedules_found',{count:result.schedules.length}));this.applyFilters(result.filters);}
