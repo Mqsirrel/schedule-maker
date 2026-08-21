@@ -34,6 +34,18 @@ export class HelpModal {
   }
 
   close() {
-    if (this.modal) this.modal.close();
+    this._animateClose();
+  }
+
+  _animateClose() {
+    const m = this.modal;
+    if (!m || !m.open || m.dataset.closing) return;
+    m.dataset.closing = 'true';
+    m.classList.add('is-closing');
+    setTimeout(() => {
+      delete m.dataset.closing;
+      m.classList.remove('is-closing');
+      if (m.open) m.close();
+    }, 150);
   }
 }

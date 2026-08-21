@@ -5,7 +5,12 @@ const DAY_LABELS = {
   en: { su: 'Sunday', mo: 'Monday', tu: 'Tuesday', we: 'Wednesday', th: 'Thursday' }
 };
 
-const PALETTE = ['#5B8DEF', '#8B6FD9', '#2FAF8F', '#E19A45', '#D8647A', '#4AA8C7', '#7E9F48', '#B56BA8'];
+/* Desaturated print-ink palette — mirrors --course-color-* tokens */
+const PALETTE = ['#41678c', '#3d7357', '#b05f33', '#8a5069', '#a07a2e', '#33747d', '#685a90', '#407464', '#99563e', '#5d7040'];
+
+const SERIF = '"Thmanyah Serif", Georgia, "Times New Roman", serif';
+const SANS = '"Thmanyah Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
 
 export class ScheduleImageRenderer {
   static render(schedule, { compact = false, lang = 'ar', theme = 'light', scale = 2 } = {}) {
@@ -16,104 +21,204 @@ export class ScheduleImageRenderer {
       : this._renderWeekly(schedule, { lang, theme, scale });
   }
 
+  /* ======================================================================
+     Compact (day-by-day) export
+     ====================================================================== */
   static _renderCompact(schedule, { lang, theme, scale }) {
     const labels = DAY_LABELS[lang];
+    const rtl = lang === 'ar';
     const days = DAYS.filter(day => (schedule.sections || []).some(section => section.days?.[day]?.length));
+
     const width = 1080;
-    const header = 190;
-    const dayHeader = 86;
-    const eventHeight = 118;
-    const dayGap = 24;
-    const dayHeights = days.map(day => dayHeader + Math.max(1, this._events(schedule, day).length) * eventHeight);
-    const height = header + dayHeights.reduce((sum, value) => sum + value + dayGap, 0) + 70;
+    const margin = 64;
+    const headerH = 210;
+    const dayLabelH = 78;
+    const eventH = 112;
+    const eventGap = 14;
+    const dayGap = 44;
+    const footerH = 84;
+
+    const dayHeights = days.map(day => dayLabelH + this._events(schedule, day).length * (eventH + eventGap));
+    const height = headerH + dayHeights.reduce((s, v) => s + v + dayGap, 0) - dayGap + footerH;
+
     const canvas = this._canvas(width, height, scale);
     const ctx = canvas.getContext('2d');
     const colors = this._colors(schedule);
+    const C = this._themeColors(theme);
 
-    this._background(ctx, width, height, theme);
-    this._header(ctx, width, 40, lang === 'ar' ? 'جدولي الدراسي' : 'My Schedule', lang, theme);
+    this._background(ctx, width, height, C);
 
-    let y = header;
-    days.forEach((day, index) => {
+    // Masthead
+    this._masthead(ctx, width, margin, lang === 'ar' ? 'جدولي الدراسي' : 'My Schedule', lang, theme, C);
+
+    let y = headerH;
+    days.forEach((day, di) => {
       const events = this._events(schedule, day);
-      this._roundedRect(ctx, 40, y, width - 80, dayHeights[index], 28, theme === 'dark' ? '#171a19' : '#ffffff');
-      this._text(ctx, labels[day], width - 76, y + 54, 34, true, this._ink(theme), 'right', lang);
 
-      let eventY = y + dayHeader;
+      // Day label: small-caps mono with a leading rule
+      const labelX = rtl ? width - margin : margin;
+      const ruleW = 56;
+      const fontSize = 30;
+      ctx.font = `700 ${fontSize}px ${MONO}`;
+      const labelW = ctx.measureText(labels[day]).width;
+      this._text(ctx, labels[day].toUpperCase(), labelX, y + 24, 24, true, C.ink, rtl ? 'right' : 'left', lang, MONO);
+      const ruleStart = rtl ? labelX - labelW - 18 : labelX + labelW + 18;
+      ctx.fillStyle = C.accent;
+      ctx.globalAlpha = 0.55;
+      ctx.fillRect(rtl ? ruleStart - ruleW : ruleStart, y + 22, ruleW, 2);
+      ctx.globalAlpha = 1;
+
+      let ey = y + dayLabelH;
       events.forEach(event => {
         const color = colors.get(event.section.courseKey) || PALETTE[0];
-        this._roundedRect(ctx, 62, eventY, width - 124, eventHeight - 14, 20, this._mix(color, theme === 'dark' ? '#151817' : '#f7f8f8', 0.84));
-        ctx.fillStyle = color;
-        ctx.fillRect(62, eventY + 18, 8, eventHeight - 50);
+        const bx = margin;
+        const bw = width - margin * 2;
+        const bh = eventH - eventGap;
 
-        const rtl = lang === 'ar';
-        const x = rtl ? width - 96 : 96;
-        this._text(ctx, event.section.courseName || event.section.courseKey, x, eventY + 38, 29, true, this._ink(theme), rtl ? 'right' : 'left', lang);
-        this._text(ctx, event.section.courseKey, x, eventY + 72, 22, false, this._muted(theme), rtl ? 'right' : 'left', lang);
-        this._text(ctx, event.slot.formatted || '', rtl ? 96 : width - 96, eventY + 44, 25, true, color, rtl ? 'left' : 'right', 'en');
-        this._text(ctx, event.section.section ? `${lang === 'ar' ? 'شعبة' : 'Section'} ${event.section.section}` : '', x, eventY + 99, 18, false, this._muted(theme), rtl ? 'right' : 'left', lang);
-        eventY += eventHeight;
+        // Tinted panel + accent bar on the reading-start edge
+        this._roundedRect(ctx, bx, ey, bw, bh, 10, this._mix(color, C.surface, 0.88));
+        ctx.strokeStyle = this._mix(color, C.surface, 0.62);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(bx + 0.75, ey + 0.75, bw - 1.5, bh - 1.5, 10);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        this._roundRectFill(ctx, rtl ? bx + bw - 5 : bx, ey, 5, bh, [2.5]);
+
+        const padX = 34;
+        const textX = rtl ? bx + bw - padX - 8 : bx + padX + 8;
+        const align = rtl ? 'right' : 'left';
+        const timeX = rtl ? bx + padX + 8 : bx + bw - padX - 8;
+        const timeAlign = rtl ? 'left' : 'right';
+
+        this._text(ctx, event.section.courseName || event.section.courseKey, textX, ey + 34, 28, true, C.ink, align, lang, SANS);
+        this._text(ctx, event.section.courseKey, textX, ey + 66, 20, false, C.muted, align, lang, MONO);
+        if (event.section.section) {
+          this._text(ctx, `${rtl ? 'شعبة' : 'Section'} ${event.section.section}`, textX, ey + 92, 17, false, C.muted, align, lang, SANS);
+        }
+        this._text(ctx, event.slot.formatted || '', timeX, ey + bh / 2, 24, true, color, timeAlign, 'en', MONO);
+
+        ey += eventH;
       });
-      y += dayHeights[index] + dayGap;
+
+      y += dayHeights[di] + dayGap;
     });
 
+    this._footer(ctx, width, height - 52, lang, theme, C);
     return canvas;
   }
 
+  /* ======================================================================
+     Weekly grid export
+     ====================================================================== */
   static _renderWeekly(schedule, { lang, theme, scale }) {
     const labels = DAY_LABELS[lang];
+    const rtl = lang === 'ar';
+
     const width = 1800;
-    const height = 1220;
-    const left = 150;
-    const top = 190;
-    const gridWidth = width - left - 50;
-    const dayWidth = gridWidth / DAYS.length;
+    const margin = 72;
+    const headerH = 220;
+    const dayHeaderH = 66;
+    const hourHeight = 96;
+    const footerH = 84;
+
     const startHour = Math.min(8, Math.floor((schedule.metrics?.earliestStartMinutes ?? 480) / 60));
-    const endHour = Math.max(18, Math.ceil((schedule.metrics?.latestEndMinutes ?? 1080) / 60));
-    const hourHeight = (height - top - 60) / (endHour - startHour);
+    const endHour = Math.max(16, Math.ceil((schedule.metrics?.latestEndMinutes ?? 1020) / 60));
+    const hours = endHour - startHour;
+
+    const height = headerH + dayHeaderH + hours * hourHeight + footerH;
+    const gridLeft = margin + 76;
+    const gridWidth = width - gridLeft - margin;
+    const dayWidth = gridWidth / DAYS.length;
+    const gridTop = headerH + dayHeaderH;
+    const gridBottom = gridTop + hours * hourHeight;
+
     const canvas = this._canvas(width, height, scale);
     const ctx = canvas.getContext('2d');
     const colors = this._colors(schedule);
+    const C = this._themeColors(theme);
 
-    this._background(ctx, width, height, theme);
-    this._header(ctx, width, 42, lang === 'ar' ? 'جدولي الدراسي الأسبوعي' : 'Weekly Schedule', lang, theme);
+    this._background(ctx, width, height, C);
+    this._masthead(ctx, width, margin, lang === 'ar' ? 'جدولي الدراسي الأسبوعي' : 'Weekly Schedule', lang, theme, C);
 
-    DAYS.forEach((day, index) => {
-      const x = left + index * dayWidth;
-      this._roundedRect(ctx, x + 5, top - 62, dayWidth - 10, 52, 14, theme === 'dark' ? '#1b1f1d' : '#ffffff');
-      this._text(ctx, labels[day], x + dayWidth / 2, top - 28, 24, true, this._ink(theme), 'center', lang);
+    // Column x-position honoring RTL reading order
+    const colX = i => {
+      const col = rtl ? DAYS.length - 1 - i : i;
+      return gridLeft + col * dayWidth;
+    };
+
+    // Day headers: small-caps text sitting on a heavy baseline rule
+    ctx.strokeStyle = C.ruleStrong;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(gridLeft, gridTop - 14); ctx.lineTo(gridLeft + gridWidth, gridTop - 14); ctx.stroke();
+
+    DAYS.forEach((day, i) => {
+      const x = colX(i);
+      this._text(ctx, labels[day], x + dayWidth / 2, gridTop - 44, 25, true, C.ink, 'center', lang, SANS);
     });
 
-    for (let hour = startHour; hour <= endHour; hour++) {
-      const y = top + (hour - startHour) * hourHeight;
-      ctx.strokeStyle = theme === 'dark' ? '#2a302d' : '#dfe4e1';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - 50, y); ctx.stroke();
-      this._text(ctx, `${String(hour).padStart(2, '0')}:00`, left - 22, y + 7, 20, false, this._muted(theme), 'right', 'en');
+    // Hour lines + labels
+    for (let h = startHour; h <= endHour; h++) {
+      const y = gridTop + (h - startHour) * hourHeight;
+      ctx.strokeStyle = C.rule;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(gridLeft, y); ctx.lineTo(gridLeft + gridWidth, y); ctx.stroke();
+      const labelX = rtl ? gridLeft + gridWidth + 18 : gridLeft - 18;
+      this._text(ctx, `${String(h).padStart(2, '0')}:00`, labelX, y - 12, 19, false, C.muted, rtl ? 'left' : 'right', 'en', MONO);
     }
 
-    DAYS.forEach((day, index) => {
-      const x = left + index * dayWidth;
-      ctx.strokeStyle = theme === 'dark' ? '#2a302d' : '#e5e9e7';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, height - 60); ctx.stroke();
+    // Vertical column separators
+    for (let i = 0; i <= DAYS.length; i++) {
+      const x = gridLeft + i * dayWidth;
+      ctx.strokeStyle = C.rule;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x, gridTop); ctx.lineTo(x, gridBottom); ctx.stroke();
+    }
+
+    // Course blocks: tinted panels with an ink accent bar
+    DAYS.forEach((day, i) => {
+      const x = colX(i);
       this._events(schedule, day).forEach(event => {
         const start = event.slot.startMinutes;
         const end = event.slot.endMinutes;
-        const y = top + ((start - startHour * 60) / 60) * hourHeight;
-        const h = Math.max(54, ((end - start) / 60) * hourHeight - 8);
+        const y = gridTop + ((start - startHour * 60) / 60) * hourHeight;
+        const h = Math.max(56, ((end - start) / 60) * hourHeight - 6);
         const color = colors.get(event.section.courseKey) || PALETTE[0];
-        this._roundedRect(ctx, x + 10, y + 4, dayWidth - 20, h, 18, this._mix(color, theme === 'dark' ? '#151817' : '#f7f8f8', 0.82));
-        ctx.fillStyle = color; ctx.fillRect(x + 10, y + 4, 8, Math.max(24, h - 8));
-        this._text(ctx, event.section.courseName || event.section.courseKey, x + 30, y + 34, 21, true, this._ink(theme), 'left', lang);
-        this._text(ctx, event.section.courseKey, x + 30, y + 61, 17, false, this._muted(theme), 'left', 'en');
-        if (h > 90) this._text(ctx, event.slot.formatted || '', x + 30, y + 87, 17, true, color, 'left', 'en');
+
+        const bx = x + 8;
+        const bw = dayWidth - 16;
+        this._roundedRect(ctx, bx, y + 3, bw, h, 8, this._mix(color, C.surface, 0.87));
+        ctx.strokeStyle = this._mix(color, C.surface, 0.6);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(bx + 0.75, y + 3.75, bw - 1.5, h - 1.5, 8);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        this._roundRectFill(ctx, rtl ? bx + bw - 4 : bx, y + 3, 4, h, [2]);
+
+        const padX = 22;
+        const tx = rtl ? bx + bw - padX : bx + padX;
+        const align = rtl ? 'right' : 'left';
+        this._text(ctx, event.section.courseName || event.section.courseKey, tx, y + 32, 21, true, C.ink, align, lang, SANS);
+        this._text(ctx, event.section.courseKey, tx, y + 58, 16, false, this._mix(color, C.surface, 0.25), align, 'en', MONO);
+        if (h > 92) {
+          this._text(ctx, event.slot.formatted || '', tx, y + 82, 16, true, this._mix(color, C.surface, 0.2), align, 'en', MONO);
+          if (h > 128 && event.section.instructor) {
+            this._text(ctx, event.section.instructor, tx, y + 106, 15, false, C.muted, align, lang, SANS);
+          }
+        } else if (h > 68) {
+          this._text(ctx, event.slot.formatted || '', tx, y + 78, 15, true, this._mix(color, C.surface, 0.2), align, 'en', MONO);
+        }
       });
     });
 
+    this._footer(ctx, width, height - 52, lang, theme, C);
     return canvas;
   }
 
+  /* ======================================================================
+     Shared pieces
+     ====================================================================== */
   static _events(schedule, day) {
     const events = [];
     for (const section of schedule.sections || []) {
@@ -141,24 +246,63 @@ export class ScheduleImageRenderer {
     return canvas;
   }
 
-  static _background(ctx, width, height, theme) {
-    ctx.fillStyle = theme === 'dark' ? '#10110f' : '#f3f0e8';
+  static _themeColors(theme) {
+    return theme === 'dark'
+      ? {
+          bg: '#121310', surface: '#191b17',
+          ink: '#f2efe7', muted: '#8b897d',
+          rule: 'rgba(244,241,232,0.09)', ruleStrong: 'rgba(244,241,232,0.22)',
+          accent: '#e2703e'
+        }
+      : {
+          bg: '#f4f1e9', surface: '#fdfcf8',
+          ink: '#1b1c15', muted: '#84826f',
+          rule: 'rgba(26,27,21,0.10)', ruleStrong: 'rgba(26,27,21,0.45)',
+          accent: '#b24a24'
+        };
+  }
+
+  static _background(ctx, width, height, C) {
+    ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, width, height);
   }
 
-  static _header(ctx, width, x, title, lang, theme) {
-    this._text(ctx, title, lang === 'ar' ? width - 52 : 52, x + 48, 44, true, this._ink(theme), lang === 'ar' ? 'right' : 'left', lang);
-    this._text(ctx, 'ScheduleMaker', lang === 'ar' ? width - 52 : 52, x + 82, 18, false, this._muted(theme), lang === 'ar' ? 'right' : 'left', 'en');
+  /* Editorial masthead: mono kicker, serif title, double rule */
+  static _masthead(ctx, width, margin, title, lang, theme, C) {
+    const rtl = lang === 'ar';
+    const x = rtl ? width - margin : margin;
+    const align = rtl ? 'right' : 'left';
+
+    this._text(ctx, rtl ? 'جامعة طيبة — SCHEDULEMAKER' : 'SCHEDULEMAKER — TAIBAH UNIVERSITY', x, 74, 17, false, C.accent, align, lang, MONO);
+    this._text(ctx, title, x, 126, 52, true, C.ink, align, lang, SERIF);
+
+    // Double rule: heavy then fine, like a newspaper masthead
+    ctx.fillStyle = C.ruleStrong;
+    ctx.fillRect(margin, 168, width - margin * 2, 3);
+    ctx.fillStyle = C.rule;
+    ctx.fillRect(margin, 176, width - margin * 2, 1.5);
   }
 
-  static _text(ctx, text, x, y, size, bold, color, align = 'left', lang = 'en') {
+  static _footer(ctx, width, y, lang, theme, C) {
+    const rtl = lang === 'ar';
+    ctx.fillStyle = C.rule;
+    ctx.fillRect(72, y - 22, width - 144, 1.5);
+    this._text(
+      ctx,
+      rtl ? 'أُنشئ بواسطة ScheduleMaker' : 'Made with ScheduleMaker',
+      rtl ? width - 72 : 72, y, 16, false, C.muted, rtl ? 'right' : 'left', lang, SANS
+    );
+    this._text(ctx, new Date().toLocaleDateString(rtl ? 'ar-SA' : 'en-GB'), rtl ? 72 : width - 72, y, 16, false, C.muted, rtl ? 'left' : 'right', 'en', MONO);
+  }
+
+  static _text(ctx, text, x, y, size, bold, color, align = 'left', lang = 'en', family = SANS) {
     ctx.save();
     ctx.direction = lang === 'ar' ? 'rtl' : 'ltr';
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
-    ctx.font = `${bold ? 700 : 500} ${size}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Arial, sans-serif`;
+    ctx.font = `${bold ? 700 : 500} ${size}px ${family}`;
     ctx.fillStyle = color;
-    ctx.fillText(String(text || ''), x, y, 760);
+    ctx.fillText(String(text || ''), x, y);
     ctx.restore();
   }
 
@@ -169,8 +313,12 @@ export class ScheduleImageRenderer {
     ctx.fill();
   }
 
-  static _ink(theme) { return theme === 'dark' ? '#f2f4f2' : '#1d211f'; }
-  static _muted(theme) { return theme === 'dark' ? '#aab2ad' : '#66706a'; }
+  /* Rounded bar used for course accent edges */
+  static _roundRectFill(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.fill();
+  }
 
   static _mix(foreground, background, amount) {
     const a = this._hex(foreground), b = this._hex(background);
@@ -179,6 +327,7 @@ export class ScheduleImageRenderer {
   }
 
   static _hex(hex) {
+    if (!hex.startsWith('#')) return hex.match(/\d+/g).map(Number);
     const clean = hex.replace('#', '');
     return [0, 2, 4].map(i => parseInt(clean.slice(i, i + 2), 16));
   }

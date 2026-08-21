@@ -110,7 +110,19 @@ export class ImportModal {
   }
 
   open() { this.modal.showModal(); }
-  close() { this.modal.close(); }
+  close() { this._animateClose(); }
+
+  _animateClose() {
+    const m = this.modal;
+    if (!m || !m.open || m.dataset.closing) return;
+    m.dataset.closing = 'true';
+    m.classList.add('is-closing');
+    setTimeout(() => {
+      delete m.dataset.closing;
+      m.classList.remove('is-closing');
+      if (m.open) m.close();
+    }, 150);
+  }
 
   _switchTab(tabName) {
     const isUpload = tabName === 'upload';
