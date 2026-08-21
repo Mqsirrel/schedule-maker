@@ -1,8 +1,6 @@
 @import url('./mobile.css');
 
-/* ==========================================================================
-   Weekly calendar — precision print grid
-   ========================================================================== */
+/* ==========================================================================\n   Weekly calendar — precision print grid\n   ========================================================================== */
 .calendar-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
@@ -146,9 +144,14 @@
   justify-content: space-between;
   gap: .25rem;
   margin-top: .2rem;
+  min-width: 0;
 }
 
 .course-block-section {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: .66rem;
   font-weight: 700;
   color: var(--color-text-secondary);
@@ -156,10 +159,14 @@
 }
 
 .course-block-time {
+  flex: 0 0 auto;
+  min-width: max-content;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: .64rem;
   color: var(--color-text-muted);
   direction: ltr;
+  text-align: end;
 }
 
 .course-block-instructor {
@@ -170,9 +177,7 @@
   text-overflow: ellipsis;
 }
 
-/* ==========================================================================
-   Compact mobile agenda
-   ========================================================================== */
+/* ==========================================================================\n   Compact mobile agenda\n   ========================================================================== */
 .mobile-calendar-view { display: none; }
 
 @media (max-width: 640px) {
