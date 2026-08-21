@@ -13,6 +13,8 @@ import { ScheduleController } from './ScheduleController.js';
 import { storageService } from '../services/storageService.js';
 import { exportService } from '../services/exportService.js';
 import { ScheduleResultsView } from '../presentation/ScheduleResultsView.js';
+import { ScheduleDiagnosticsView } from '../presentation/ScheduleDiagnosticsView.js';
+import { CourseDetailView } from '../presentation/CourseDetailView.js';
 
 export class ScheduleMakerApp {
   constructor() { this.state = new AppState(); this._init(); }
@@ -22,7 +24,6 @@ export class ScheduleMakerApp {
   set wantedCourseGroups(v) { this.state.set('wantedCourseGroups', v); }
   get filteredSchedules() { return this.state.get('filteredSchedules'); }
   get currentScheduleIndex() { return this.state.get('currentScheduleIndex'); }
-  get currentView() { return this.state.get('currentView'); }
 
   _init() {
     this.notification = new NotificationManager();
@@ -34,18 +35,14 @@ export class ScheduleMakerApp {
     this.filterBar = new FilterBar({ onFilterChange: f => this.applyFilters(f) });
     this.scheduleController = new ScheduleController({ state: this.state, getFilterState: () => this.filterBar.getFilterState() });
     this._initDOMElements();
-    this.resultsView = new ScheduleResultsView({
-      state: this.state, calendarGrid: this.calendarGrid, tableView: this.tableView, storageService,
-      elements: {
-        resultsToolbar: this.resultsToolbar, resultsPlaceholder: this.resultsPlaceholder,
-        calendarViewContainer: this.calendarViewContainer, tableViewContainer: this.tableViewContainer,
-        btnViewCalendar: this.btnViewCalendar, btnViewTable: this.btnViewTable,
-        btnPrevSchedule: this.btnPrevSchedule, btnNextSchedule: this.btnNextSchedule,
-        currScheduleIndex: this.currScheduleIndex, totalSchedulesCount: this.totalSchedulesCount,
-        statScore: this.statScore, valScore: this.valScore, valDaysOff: this.valDaysOff,
-        valTotalGaps: this.valTotalGaps, btnBookmark: this.btnBookmark
-      }
-    });
+    this.resultsView = new ScheduleResultsView({ state: this.state, calendarGrid: this.calendarGrid, tableView: this.tableView, storageService, elements: {
+      resultsToolbar: this.resultsToolbar, resultsPlaceholder: this.resultsPlaceholder, calendarViewContainer: this.calendarViewContainer, tableViewContainer: this.tableViewContainer,
+      btnViewCalendar: this.btnViewCalendar, btnViewTable: this.btnViewTable, btnPrevSchedule: this.btnPrevSchedule, btnNextSchedule: this.btnNextSchedule,
+      currScheduleIndex: this.currScheduleIndex, totalSchedulesCount: this.totalSchedulesCount, statScore: this.statScore, valScore: this.valScore,
+      valDaysOff: this.valDaysOff, valTotalGaps: this.valTotalGaps, btnBookmark: this.btnBookmark
+    }});
+    this.diagnosticsView = new ScheduleDiagnosticsView({ element: this.conflictDiagnosticBox, translate: t, escapeHtml: s => this._escapeHtml(s) });
+    this.courseDetailView = new CourseDetailView({ modal: this.courseDetailModal, body: this.courseDetailBody, escapeHtml: s => this._escapeHtml(s) });
     this._bindEvents(); this._checkCachedData(); updateDOMTranslations();
   }
 
@@ -58,31 +55,25 @@ export class ScheduleMakerApp {
   _bindEvents() {
     this.btnToggleTheme.addEventListener('click', () => { const next = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); storageService.setTheme(next); });
     this.btnToggleLang.addEventListener('click', () => { setLang(getLang() === 'ar' ? 'en' : 'ar'); this.courseSelector._updateStatusBadge(); this.renderCurrentSchedule(); });
-    window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; if (e.key === 'ArrowRight') this.navigateSchedule(getLang() === 'ar' ? -1 : 1); else if (e.key === 'ArrowLeft') this.navigateSchedule(getLang() === 'ar' ? 1 : -1); else if (e.key === 'b' || e.key === 'B' || e.key === 'لا') this.toggleCurrentBookmark(); else if (e.key === 'Escape') { this.importModal.close(); this.helpModal.close(); if (this.courseDetailModal) this.courseDetailModal.close(); } });
+    window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; if (e.key === 'ArrowRight') this.navigateSchedule(getLang() === 'ar' ? -1 : 1); else if (e.key === 'ArrowLeft') this.navigateSchedule(getLang() === 'ar' ? 1 : -1); else if (e.key === 'b' || e.key === 'B' || e.key === 'لا') this.toggleCurrentBookmark(); else if (e.key === 'Escape') { this.importModal.close(); this.helpModal.close(); this.courseDetailView.close(); } });
     this.btnLoadDemo.addEventListener('click', () => this.loadDemoDataset());
-    this.btnViewCalendar.addEventListener('click', () => this.switchView('calendar'));
-    this.btnViewTable.addEventListener('click', () => this.switchView('table'));
-    this.btnPrevSchedule.addEventListener('click', () => this.navigateSchedule(-1));
-    this.btnNextSchedule.addEventListener('click', () => this.navigateSchedule(1));
+    this.btnViewCalendar.addEventListener('click', () => this.switchView('calendar')); this.btnViewTable.addEventListener('click', () => this.switchView('table'));
+    this.btnPrevSchedule.addEventListener('click', () => this.navigateSchedule(-1)); this.btnNextSchedule.addEventListener('click', () => this.navigateSchedule(1));
     if (this.btnCopyCrns) this.btnCopyCrns.addEventListener('click', () => this.copyCurrentScheduleCrns());
-    this.btnBookmark.addEventListener('click', () => this.toggleCurrentBookmark());
-    this.btnExportImage.addEventListener('click', () => this.exportCurrentSchedulePng());
-    this.btnExportIcs.addEventListener('click', () => this.exportCurrentScheduleIcs());
-    if (this.btnCloseCourseDetail) this.btnCloseCourseDetail.addEventListener('click', () => this.courseDetailModal.close());
+    this.btnBookmark.addEventListener('click', () => this.toggleCurrentBookmark()); this.btnExportImage.addEventListener('click', () => this.exportCurrentSchedulePng()); this.btnExportIcs.addEventListener('click', () => this.exportCurrentScheduleIcs());
+    if (this.btnCloseCourseDetail) this.btnCloseCourseDetail.addEventListener('click', () => this.courseDetailView.close());
   }
 
   _checkCachedData() { const cached = storageService.getTimetable(); if (cached?.length) { this.timetableSections = cached; this.courseSelector.setTimetableData(cached); } this.wantedCourseGroups = this.courseSelector.getWantedCourseGroups(); }
   onTimetableLoaded(sections) { this.timetableSections = sections; storageService.saveTimetable(sections); this.courseSelector.setTimetableData(sections); }
   loadDemoDataset() { this.onTimetableLoaded(getSampleSections()); setTimeout(() => { const code = document.getElementById('courseCode'), number = document.getElementById('courseNumber'); for (const [c,n] of [['CS','181'],['MATH','101'],['PHYS','101']]) { code.value=c; number.value=n; this.courseSelector.addCurrentCourse(); } this.notification.showSuccess(t('toast_demo_loaded')); this.generateSchedules(); }, 150); }
   onWantedCoursesChanged(groups) { this.wantedCourseGroups = groups; if (!groups.length) { this.state.resetResults(); this.resultsView.updateVisibility(); } }
-  async generateSchedules() { if (!this.wantedCourseGroups.length) return; const result = await this.scheduleController.generate(this.wantedCourseGroups); if (!result.schedules.length) { this.notification.showError(t('toast_no_schedules_found')); this._renderConflictDiagnostics(this.scheduleController.diagnoseConflicts(this.wantedCourseGroups)); this.resultsView.updateVisibility(); return; } this._renderConflictDiagnostics([]); this.notification.playChime(); this.notification.showSuccess(t('toast_schedules_found', { count: result.schedules.length })); this.applyFilters(result.filters); }
+  async generateSchedules() { if (!this.wantedCourseGroups.length) return; const result = await this.scheduleController.generate(this.wantedCourseGroups); if (!result.schedules.length) { this.notification.showError(t('toast_no_schedules_found')); this.diagnosticsView.render(this.scheduleController.diagnoseConflicts(this.wantedCourseGroups)); this.resultsView.updateVisibility(); return; } this.diagnosticsView.render([]); this.notification.playChime(); this.notification.showSuccess(t('toast_schedules_found', { count: result.schedules.length })); this.applyFilters(result.filters); }
   applyFilters(filters) { const result = this.scheduleController.filter(filters); this.resultsView.updateVisibility(); if (result.length) this.renderCurrentSchedule(); }
   renderCurrentSchedule() { this.resultsView.render(); }
   navigateSchedule(delta) { if (this.state.navigateSchedule(delta)) this.resultsView.render(); }
   switchView(view) { this.resultsView.switchView(view); }
-
-  _renderConflictDiagnostics(bottlenecks) { if (!this.conflictDiagnosticBox) return; if (!bottlenecks.length) { this.conflictDiagnosticBox.style.display='none'; return; } const items=bottlenecks.map(b=>`<li>${t('conflict_between_courses',{c1:`<strong>${this._escapeHtml(b.courseA)}</strong>`,c2:`<strong>${this._escapeHtml(b.courseB)}</strong>`})}</li>`).join(''); this.conflictDiagnosticBox.innerHTML=`<div class="diagnostic-title"><strong>${t('conflict_diagnostic_title')}</strong></div><ul class="diagnostic-list">${items}</ul><p class="diagnostic-tip">💡 نصيحة: جرّب إزالة إحدى المادتين المتعارضتين أو تفعيل خيار الشعب الممتلئة لإيجاد جدول متوافق.</p>`; this.conflictDiagnosticBox.style.display='block'; }
-  showCourseDetailModal(section) { if (!section || !this.courseDetailModal) return; this.courseDetailBody.innerHTML=`<div style="display:flex;flex-direction:column;gap:.85rem"><div><h4 style="font-size:1.15rem;color:var(--color-primary)">${this._escapeHtml(section.courseName)}</h4><p style="font-size:.9rem;margin-top:.2rem">${this._escapeHtml(section.courseKey)} - شعبة ${this._escapeHtml(section.section)}</p></div><div style="background:var(--color-bg-base);padding:1rem;border-radius:var(--radius-md);border:1px solid var(--color-border);display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.9rem"><div><strong>أستاذ المادة:</strong> ${this._escapeHtml(section.instructor)}</div><div><strong>الفرع:</strong> ${this._escapeHtml(section.branch || 'المقر الرئيسي')}</div><div><strong>المقاعد المتاحة:</strong> ${section.availableSeats}</div><div><strong>المسجلون:</strong> ${section.enrolledSeats}</div></div></div>`; this.courseDetailModal.showModal(); }
+  showCourseDetailModal(section) { this.courseDetailView.show(section); }
   toggleCurrentBookmark() { const current=this.state.getCurrentSchedule(); if(!current)return; const added=storageService.toggleBookmark(current); this.btnBookmark.classList.toggle('bookmarked',added); this.notification.showSuccess(added?'تمت إضافة الجدول للمفضلة':'تمت إزالة الجدول من المفضلة'); }
   copyCurrentScheduleCrns() { const current=this.state.getCurrentSchedule(); if(!current?.sections)return; const lines=current.sections.map(s=>`${s.courseKey||`${s.courseCode||''} ${s.courseNumber||''}`.trim()} ${s.section?`(شعبة ${s.section})`:''} ${s.courseName?`- ${s.courseName}`:''}`.trim()).join('\n'); const payload=`${lines}\n\nأرقام الشعب (CRNs):\n${current.sections.map(s=>s.section).filter(Boolean).join(', ')}`; if(navigator.clipboard?.writeText)navigator.clipboard.writeText(payload).then(()=>this.notification.showSuccess(t('toast_crns_copied'))).catch(()=>this._fallbackCopy(payload)); else this._fallbackCopy(payload); }
   _fallbackCopy(text) { const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select(); try{document.execCommand('copy');this.notification.showSuccess(t('toast_crns_copied'));}catch{this.notification.showInfo(text);} document.body.removeChild(ta); }
