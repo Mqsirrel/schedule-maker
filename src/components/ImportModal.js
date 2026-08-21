@@ -6,7 +6,7 @@ import { t } from '../i18n/translations.js';
 export class ImportModal {
   constructor(options = {}) {
     this.onTimetableLoaded = options.onTimetableLoaded || (() => {});
-    this.onCrnsImported = options.onCrnsImported || (() => {});
+    this.onCrnsImported = options.onCrnsImported || (() => ({}));
     this.onOpenHelp = options.onOpenHelp || (() => {});
     this.notification = options.notification;
 
@@ -177,10 +177,30 @@ export class ImportModal {
       this.notification?.showError('لم يتم العثور على مواد بصيغة صحيحة.');
       return;
     }
-    this.onCrnsImported(entries);
-    this.notification?.showSuccess(`تم استيراد ${entries.length} مادة.`);
+
+    const result = this.onCrnsImported(entries) || {};
+    const imported = Number(result.imported || 0);
+    const unmatched = Array.isArray(result.unmatched) ? result.unmatched : [];
+    const duplicate = Array.isArray(result.duplicate) ? result.duplicate : [];
+    const timetableSections = Number(result.timetableSections || 0);
+
+    if (imported > 0 && unmatched.length === 0 && duplicate.length === 0) {
+      this.notification?.showSuccess(`تمت مطابقة واستيراد ${imported} مادة بنجاح.`);
+    } else if (imported > 0) {
+      const details = unmatched.map(e => `${e.courseCode}-${e.courseNumber} (${e.crn})`).join('، ');
+      this.notification?.showInfo(`تم استيراد ${imported} مادة، و${unmatched.length} لم تطابق${details ? `: ${details}` : ''}${duplicate.length ? `، و${duplicate.length} مضافة مسبقًا` : ''}.`);
+    } else if (unmatched.length > 0) {
+      const details = unmatched.map(e => `${e.courseCode}-${e.courseNumber} (${e.crn})`).join('، ');
+      const reason = timetableSections === 0
+        ? 'لا توجد بيانات جدول دراسي محملة للمطابقة.'
+        : 'لم تطابق أي شعبة في بيانات الجدول الحالية.';
+      this.notification?.showError(`تم استخراج ${entries.length} مادة، لكن لم تتم مطابقة أي مادة. ${reason} ${details}`);
+    } else if (duplicate.length > 0) {
+      this.notification?.showInfo(`تم العثور على ${duplicate.length} مادة، لكنها مضافة مسبقًا.`);
+    }
+
     this.txtCrnImport.value = '';
     this.crnImportPreview.hidden = true;
-    this.close();
+    if (imported > 0) this.close();
   }
 }
