@@ -1,4 +1,7 @@
-/* Keep the demo action text-only. This avoids changing the HTML structure. */
-#btnLoadDemo > svg {
-  display: none;
+/* Quick demo action button styling */
+#btnLoadDemo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
 }

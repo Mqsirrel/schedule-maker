@@ -159,15 +159,30 @@
   .banner-text p { font-size: .82rem; line-height: 1.5; }
 
   .banner-actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     margin-top: 12px;
+    width: 100%;
   }
 
-  .banner-actions .btn { min-width: 0; min-height: 46px; padding-inline: 12px; }
-  .banner-actions .btn-secondary { width: 46px; padding: 0; }
-  .banner-actions .btn-secondary span { display: none; }
+  .banner-actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding-inline: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .banner-actions .btn-secondary {
+    width: 100%;
+    padding: 0.65rem 1rem;
+  }
+  .banner-actions .btn-secondary span {
+    display: inline !important;
+  }
 
   .workspace-grid {
     display: flex;
@@ -288,7 +303,7 @@
 @media (max-width: 380px) {
   .brand-title { font-size: .98rem; }
   .header-actions .btn-icon, .header-actions .btn-pill { width: 38px; min-width: 38px; }
-  .banner-actions { grid-template-columns: minmax(0, 1fr) 42px; }
+  .banner-actions { display: flex; flex-direction: column; width: 100%; }
   .form-inputs-row { grid-template-columns: 1fr; }
   .form-inputs-row .input-field:last-child { grid-column: auto; }
   .calendar-header-row, .calendar-body-matrix { width: max(100%, 670px); }
