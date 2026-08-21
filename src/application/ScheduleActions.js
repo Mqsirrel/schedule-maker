@@ -18,12 +18,24 @@ export class ScheduleActions {
 
   async copyCrns(fallbackCopy) {
     const current = this.state.getCurrentSchedule();
-    if (!current?.sections) return;
-    const lines = current.sections.map(s => `${s.courseKey || `${s.courseCode || ''} ${s.courseNumber || ''}`.trim()} ${s.section ? `(شعبة ${s.section})` : ''} ${s.courseName ? `- ${s.courseName}` : ''}`.trim()).join('\n');
-    const payload = `${lines}\n\nأرقام الشعب (CRNs):\n${current.sections.map(s => s.section).filter(Boolean).join(', ')}`;
+    if (!current?.sections?.length) return;
+
+    const lines = current.sections.map((s) => {
+      const courseCode = s.courseCode || '';
+      const courseNumber = s.courseNumber || '';
+      const courseName = s.courseName || '';
+      const crn = s.section || s.crn || '';
+      const course = `${courseCode}-${courseNumber}`.replace(/-+$/, '');
+      return `${course} (${crn})${courseName ? ` - ${courseName}` : ''}`.trim();
+    });
+
+    const payload = lines.join('\n');
     if (navigator.clipboard?.writeText) {
-      try { await navigator.clipboard.writeText(payload); this.notification.showSuccess(this.t('toast_crns_copied')); return; }
-      catch { /* use legacy fallback */ }
+      try {
+        await navigator.clipboard.writeText(payload);
+        this.notification.showSuccess(this.t('toast_crns_copied'));
+        return;
+      } catch { /* use legacy fallback */ }
     }
     fallbackCopy(payload);
   }
