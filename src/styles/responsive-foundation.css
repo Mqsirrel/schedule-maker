@@ -57,14 +57,16 @@
   .mobile-day-tab.is-empty { opacity: .45; }
   .mobile-day-count { font-size: .68rem; opacity: .7; }
   .mobile-agenda { display: grid; gap: 8px; }
-  .mobile-course-item { width: 100%; min-height: 76px; padding: 10px; display: grid; grid-template-columns: 58px 4px minmax(0, 1fr); gap: 9px; align-items: center; text-align: start; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-bg-base); color: inherit; font: inherit; cursor: pointer; }
-  .mobile-course-time { font-size: .74rem; opacity: .72; line-height: 1.25; }
-  .mobile-course-line { align-self: stretch; width: 4px; border-radius: 99px; background: var(--mobile-course-color); }
+  .mobile-course-item { width: 100%; min-height: 72px; padding: 10px 12px; display: grid; grid-template-columns: auto 3px minmax(0, 1fr); gap: 12px; align-items: center; text-align: start; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-bg-base); color: inherit; font: inherit; cursor: pointer; }
+  .mobile-course-time { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 48px; font-family: var(--font-mono); font-size: .78rem; font-weight: 600; line-height: 1.15; direction: ltr; text-align: center; white-space: nowrap; }
+  .mobile-time-start { font-weight: 700; font-size: .78rem; }
+  .mobile-time-sep { font-size: .6rem; opacity: .7; line-height: 1; }
+  .mobile-time-end { font-size: .74rem; opacity: .85; }
+  .mobile-course-line { align-self: stretch; width: 3px; border-radius: 99px; background: var(--mobile-course-color); }
   .mobile-course-content { min-width: 0; display: grid; gap: 2px; }
-  .mobile-course-title, .mobile-course-code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .mobile-course-title { font-weight: 700; font-size: .93rem; }
-  .mobile-course-code { font-size: .78rem; opacity: .7; }
-  .mobile-course-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .7rem; opacity: .62; }
+  .mobile-course-title { font-weight: 700; font-size: .88rem; overflow-wrap: anywhere; }
+  .mobile-course-code { font-family: var(--font-mono); font-size: .72rem; opacity: .7; direction: ltr; }
+  .mobile-course-meta { display: flex; flex-wrap: wrap; gap: 3px 8px; font-size: .66rem; opacity: .65; }
   .mobile-agenda-empty { min-height: 140px; border: 1px dashed var(--color-border); border-radius: 14px; display: grid; place-items: center; align-content: center; gap: 4px; text-align: center; opacity: .7; padding: 20px; }
   .mobile-agenda-empty-icon { font-size: 1.4rem; }
 

@@ -159,9 +159,20 @@ export class CalendarGrid {
         const color = courseColorMap.get(event.section.courseKey) || 'var(--color-primary)';
         const duration = Math.max(1, event.slot.endMinutes - event.slot.startMinutes);
         const instructor = event.section.instructor || (lang === 'ar' ? 'غير محدد' : 'TBA');
+        const formatTime = (mins) => {
+          const h = Math.floor(mins / 60);
+          const m = mins % 60;
+          return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        };
+        const startTime = formatTime(event.slot.startMinutes);
+        const endTime = formatTime(event.slot.endMinutes);
         return `
           <button class="mobile-course-item" type="button" data-section-id="${this._escapeHtml(event.section.id)}">
-            <span class="mobile-course-time">${this._escapeHtml(event.slot.formatted)}</span>
+            <span class="mobile-course-time">
+              <span class="mobile-time-start">${startTime}</span>
+              <span class="mobile-time-sep">—</span>
+              <span class="mobile-time-end">${endTime}</span>
+            </span>
             <span class="mobile-course-line" style="--mobile-course-color: ${color};" aria-hidden="true"></span>
             <span class="mobile-course-content">
               <span class="mobile-course-title">${this._escapeHtml(event.section.courseName)}</span>
