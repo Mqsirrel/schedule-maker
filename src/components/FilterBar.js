@@ -8,16 +8,18 @@ export class FilterBar {
     this.sortResultsBy = document.getElementById('sortResultsBy');
     this.searchDoctorSection = document.getElementById('searchDoctorSection');
     this.chkShowFullSeats = document.getElementById('chkShowFullSections');
+    this.btnBookmark = document.getElementById('btnBookmarkSchedule');
 
-    // Keep the underlying controls for compatibility, but remove controls
-    // that are not useful in the compact results UI.
+    // Keep the existing DOM references for compatibility with the main
+    // controller, but hide controls that are no longer part of the UI.
     this.filterDaysOff?.closest('.filter-group')?.remove();
     this.sortResultsBy?.closest('.filter-group')?.remove();
     this.searchDoctorSection?.closest('.filter-group')?.remove();
 
-    // Favorites had no dedicated way to browse/restore saved schedules,
-    // so remove the action rather than exposing a misleading button.
-    document.getElementById('btnBookmarkSchedule')?.remove();
+    // Do not remove the bookmark element: main.js still uses its reference
+    // when rendering schedules. Hide it instead so schedule generation and
+    // rendering cannot fail because of a null DOM reference.
+    if (this.btnBookmark) this.btnBookmark.style.display = 'none';
 
     this._bindEvents();
   }
