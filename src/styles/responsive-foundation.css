@@ -3,6 +3,9 @@
 .app-layout { width: min(100%, 1480px); margin-inline: auto; box-sizing: border-box; }
 .workspace-grid > *, .results-panel, .sidebar-panel, .calendar-view-container, .table-view-container { min-width: 0; }
 
+/* Removed actions stay out of the presentation while legacy storage/export code can remain isolated. */
+#btnBookmarkSchedule, #btnExportIcs { display: none !important; }
+
 /* Desktop is the default presentation for everything above the phone breakpoint. */
 @media (min-width: 641px) {
   .app-layout { padding-inline: clamp(14px, 2vw, 24px); }
@@ -10,6 +13,7 @@
   .sidebar-panel { position: sticky; top: 5.5rem; max-height: calc(100vh - 6.25rem); overflow-y: auto; scrollbar-gutter: stable; }
   .results-panel { width: 100%; min-width: 0; }
   .mobile-calendar-view { display: none; }
+  .export-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 }
 
 @media (max-width: 640px) {
@@ -21,6 +25,7 @@
   .top-banner { padding: 16px; }
   .banner-content, .banner-actions { width: 100%; }
   .banner-actions { display: grid; grid-template-columns: 1fr; }
+  #btnLoadDemo svg { display: none; }
   .banner-text h2 { font-size: 1.15rem; }
   .banner-text p { font-size: .85rem; }
   .form-row, .form-inputs-row { grid-template-columns: 1fr; }
@@ -30,7 +35,7 @@
   .view-mode-toggle { width: 100%; }
   .view-btn { flex: 1; min-height: 42px; justify-content: center; }
   .schedule-pagination { width: 100%; justify-content: space-between; }
-  .export-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .export-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .btn-icon-labeled, .btn { min-height: 42px; }
   .btn-icon { width: 42px; height: 42px; }
   .course-card-item, .course-item-info, .course-item-title, .course-item-tags { min-width: 0; }
