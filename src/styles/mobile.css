@@ -297,6 +297,20 @@
   .calendar-body-matrix { grid-template-columns: 52px repeat(5, minmax(124px, 1fr)); }
 }
 
+/* Keep the results toolbar compact: filtering by free days and sorting are
+   intentionally hidden while their defaults remain active in the engine. */
+#filterDaysOff,
+#sortResultsBy,
+label[for="filterDaysOff"],
+label[for="sortResultsBy"] {
+  display: none !important;
+}
+
+.results-toolbar .filters-row .filter-group:has(#filterDaysOff),
+.results-toolbar .filters-row .filter-group:has(#sortResultsBy) {
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .calendar-card { scroll-behavior: auto; }
 }
