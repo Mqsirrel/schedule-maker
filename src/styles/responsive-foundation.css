@@ -1,75 +1,73 @@
-/* Responsive presentation layer. Business logic and state stay viewport-agnostic. */
+/* Responsive presentation layer. Domain, solver, state and actions stay viewport-agnostic. */
 
-.app-layout {
-  width: min(100%, 1480px);
-  margin-inline: auto;
-  box-sizing: border-box;
+.app-layout { width: min(100%, 1480px); margin-inline: auto; box-sizing: border-box; }
+.workspace-grid > *, .results-panel, .sidebar-panel, .calendar-view-container, .table-view-container { min-width: 0; }
+
+/* Desktop: use the extra width without changing the information architecture. */
+@media (min-width: 1101px) {
+  .workspace-grid { grid-template-columns: minmax(320px, 360px) minmax(0, 1fr); gap: 24px; }
+  .sidebar-panel { position: sticky; top: 5.5rem; max-height: calc(100vh - 6.25rem); overflow-y: auto; scrollbar-gutter: stable; }
+  .results-panel { width: 100%; min-width: 0; }
 }
 
-.workspace-grid > *,
-.results-panel,
-.sidebar-panel {
-  min-width: 0;
-}
-
-.calendar-view-container,
-.table-view-container {
-  min-width: 0;
-  width: 100%;
-}
-
-@media (min-width: 1280px) {
-  .workspace-grid {
-    grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
-    gap: 24px;
-  }
-
-  .results-panel { min-width: 0; }
-}
-
-@media (min-width: 641px) and (max-width: 1023px) {
-  .workspace-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar-panel {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-
+/* Tablet: stack the main areas, but keep course controls compact. */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .app-layout { padding-inline: clamp(14px, 3vw, 24px); }
+  .workspace-grid { grid-template-columns: 1fr; gap: 16px; }
+  .sidebar-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
   .results-panel { width: 100%; }
+  .selected-courses-container { max-height: 280px; }
+  .search-filter { min-width: 240px; }
 }
 
+/* Phone: controls become touch-friendly and wide; dense schedules scroll inside their viewport. */
 @media (max-width: 640px) {
-  .app-layout { padding-inline: 12px; }
+  .app-layout { width: 100%; padding-inline: 10px; }
+  .workspace-grid { display: flex; flex-direction: column; gap: 12px; }
+  .sidebar-panel { display: flex; flex-direction: column; width: 100%; }
+  .results-panel, .results-toolbar, .calendar-view-container, .table-view-container { width: 100%; max-width: 100%; }
+  .results-toolbar { box-sizing: border-box; padding: 14px; }
 
-  .workspace-grid { gap: 12px; }
+  .top-banner { padding: 16px; }
+  .banner-content, .banner-actions { width: 100%; }
+  .banner-actions { display: grid; grid-template-columns: 1fr; }
+  .banner-text h2 { font-size: 1.15rem; }
+  .banner-text p { font-size: .85rem; }
 
-  .sidebar-panel {
-    width: 100%;
-    box-sizing: border-box;
-  }
+  .form-row, .form-inputs-row { grid-template-columns: 1fr; }
+  .selected-courses-container { max-height: none; }
 
-  .results-panel,
-  .results-toolbar,
-  .calendar-view-container,
-  .table-view-container {
-    width: 100%;
-    max-width: 100%;
-  }
+  .filters-row, .sub-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .filter-group, .filter-group > *, .search-filter { width: 100%; min-width: 0; }
+  .view-mode-toggle { width: 100%; }
+  .view-btn { flex: 1; min-height: 42px; justify-content: center; }
+  .schedule-pagination { width: 100%; justify-content: space-between; }
+  .export-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .btn-icon-labeled, .btn { min-height: 42px; }
+  .btn-icon { width: 42px; height: 42px; }
 
-  .results-toolbar { box-sizing: border-box; }
-
-  /* Never let a long Arabic course/instructor name force horizontal scrolling. */
-  .course-card-item,
-  .course-item-info,
-  .course-item-title,
-  .course-item-tags {
-    min-width: 0;
-  }
-
+  /* Never let long Arabic text expand the page. */
+  .course-card-item, .course-item-info, .course-item-title, .course-item-tags { min-width: 0; }
   .course-item-title { overflow-wrap: anywhere; }
+
+  /* Keep calendar/table cells readable. Only the schedule surface scrolls horizontally. */
+  .calendar-view-container, .table-view-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #calendarGridMatrix { min-width: 680px; }
+  #scheduleDetailTable { min-width: 620px; }
+
+  /* iPhone safe-area and viewport-height support. */
+  .app-modal { max-height: calc(100dvh - 12px); overflow-y: auto; }
+}
+
+@supports (padding: max(0px)) {
+  @media (max-width: 640px) {
+    .app-layout { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+    .app-header .header-container { padding-inline-start: max(12px, env(safe-area-inset-left)); padding-inline-end: max(12px, env(safe-area-inset-right)); }
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover, .btn-icon:hover, .btn-pill:hover, .view-btn:hover, .btn-icon-labeled:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
