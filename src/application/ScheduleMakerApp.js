@@ -60,20 +60,31 @@ export class ScheduleMakerApp {
     let imported = 0;
     const unmatched = [];
     const duplicate = [];
+    const normalize = value => String(value ?? '')
+      .replace(/\u00a0/g, ' ')
+      .replace(/\s+/g, '')
+      .replace(/^شعبة/i, '')
+      .replace(/^section|^sec|^crn/i, '')
+      .toUpperCase();
 
     for (const entry of entries) {
-      const matching = this.courseSelector.allSections.filter(sec =>
-        sec.courseCode?.toUpperCase() === entry.courseCode &&
-        sec.courseNumber === entry.courseNumber &&
-        sec.section?.toUpperCase() === entry.crn
-      );
+      const wantedCode = normalize(entry.courseCode);
+      const wantedNumber = String(entry.courseNumber ?? '').trim();
+      const wantedSection = normalize(entry.crn);
+
+      const matching = this.courseSelector.allSections.filter(sec => {
+        const secCode = normalize(sec.courseCode);
+        const secNumber = String(sec.courseNumber ?? '').trim();
+        const secSection = normalize(sec.section ?? sec.crn ?? sec.sectionNumber);
+        return secCode === wantedCode && secNumber === wantedNumber && secSection === wantedSection;
+      });
 
       if (!matching.length) {
         unmatched.push(entry);
         continue;
       }
 
-      const key = `${entry.courseCode}-${entry.courseNumber}`;
+      const key = `${entry.courseCode.toUpperCase()}-${entry.courseNumber}`;
       if (this.courseSelector.wantedCourses[key]) {
         duplicate.push(entry);
         continue;
@@ -88,14 +99,13 @@ export class ScheduleMakerApp {
 
     if (imported > 0) this.generateSchedules();
 
-    if (unmatched.length) {
-      const names = unmatched.map(e => `${e.courseCode}-${e.courseNumber} (${e.crn})`).join('، ');
-      this.notification.showError(`${imported} مادة مطابقة، و${unmatched.length} لم تطابق البيانات الحالية: ${names}`);
-    } else if (duplicate.length && imported === 0) {
-      this.notification.showInfo(`تم العثور على ${duplicate.length} مادة، لكنها مضافة مسبقاً.`);
-    } else if (imported > 0) {
-      this.notification.showSuccess(`تمت مطابقة واستيراد ${imported} مادة بنجاح.`);
-    }
+    return {
+      extracted: entries.length,
+      imported,
+      unmatched,
+      duplicate,
+      timetableSections: this.courseSelector.allSections.length
+    };
   }
 
   loadDemoDataset(){
@@ -103,9 +113,7 @@ export class ScheduleMakerApp {
     this.onTimetableLoaded(getSampleSections());
     setTimeout(()=>{
       const code=document.getElementById('courseCode'),number=document.getElementById('courseNumber');
-      for(const[c,n]of [['CS','181'],['MATH','101'],['PHYS','101'],['EXP','901'],['EXP','902'],['EXP','903']]){
-        code.value=c; number.value=n; this.courseSelector.addCurrentCourse();
-      }
+      for(const[c,n]of [['CS','181'],['MATH','101'],['PHYS','101'],['EXP','901'],['EXP','902'],['EXP','903']]){code.value=c;number.value=n;this.courseSelector.addCurrentCourse();}
       this.notification.showSuccess(getLang()==='ar'?'تم تحميل بيانات تجريبية، ويتم الآن إنشاء جدول مناسب.':'Sample data loaded. Building a schedule now.');
       this.generateSchedules();
     },150);
