@@ -1,0 +1,77 @@
+/* Responsive presentation layer. Business logic and state stay viewport-agnostic. */
+
+.app-layout {
+  width: min(100%, 1480px);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.workspace-grid > *,
+.results-panel,
+.sidebar-panel {
+  min-width: 0;
+}
+
+.calendar-view-container,
+.table-view-container {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 1280px) {
+  .workspace-grid {
+    grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .results-panel { min-width: 0; }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .results-panel { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .app-layout { padding-inline: 12px; }
+
+  .workspace-grid { gap: 12px; }
+
+  .sidebar-panel {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .results-panel,
+  .results-toolbar,
+  .calendar-view-container,
+  .table-view-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .results-toolbar { box-sizing: border-box; }
+
+  /* Never let a long Arabic course/instructor name force horizontal scrolling. */
+  .course-card-item,
+  .course-item-info,
+  .course-item-title,
+  .course-item-tags {
+    min-width: 0;
+  }
+
+  .course-item-title { overflow-wrap: anywhere; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-layout * { scroll-behavior: auto !important; }
+}
