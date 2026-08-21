@@ -1,26 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Schedule } from '../src/domain/Schedule.js';
+import { ScheduleModel } from '../src/domain/ScheduleModel.js';
 import { normalizeArabic, scheduleIdentity, deduplicateSchedules } from '../src/engine/scheduleUtils.js';
 
 function schedule(id, sections, metrics = {}) {
   return { id, sections, metrics };
 }
 
-test('Schedule.from preserves the existing schedule shape', () => {
+test('ScheduleModel preserves the existing schedule shape', () => {
   const raw = schedule('sched_1', [{ courseKey: 'CS181', section: '01' }], { daysOffCount: 2 });
-  const model = Schedule.from(raw);
+  const model = ScheduleModel.from(raw);
 
   assert.deepEqual(model.sections, raw.sections);
   assert.deepEqual(model.metrics, raw.metrics);
   assert.equal(model.id, 'sched_1');
+  assert.equal(model.identity, 'CS181::01');
   assert.deepEqual(model.toJSON(), raw);
 });
 
-test('Schedule.from is idempotent', () => {
+test('ScheduleModel.from is idempotent', () => {
   const raw = schedule('sched_1', []);
-  const model = Schedule.from(raw);
-  assert.equal(Schedule.from(model), model);
+  const model = ScheduleModel.from(raw);
+  assert.equal(ScheduleModel.from(model), model);
+});
+
+test('ScheduleModel keeps ranking fields mutable for compatibility', () => {
+  const model = ScheduleModel.from(schedule('a', []));
+  model.score = 97;
+  model.rank = 1;
+  assert.equal(model.score, 97);
+  assert.equal(model.rank, 1);
 });
 
 test('schedule identity remains based on course and section', () => {
@@ -34,6 +43,7 @@ test('schedule identity remains based on course and section', () => {
   ]);
 
   assert.equal(scheduleIdentity(a), scheduleIdentity(b));
+  assert.equal(ScheduleModel.from(a).identity, ScheduleModel.from(b).identity);
   assert.equal(deduplicateSchedules([a, b]).length, 1);
 });
 
