@@ -6,6 +6,9 @@ export class NotificationManager {
     this.audio = document.getElementById('audioChime');
     this.lastSuccessToast = null;
     this.lastSuccessAt = 0;
+    this.lastErrorToast = null;
+    this.lastErrorMessage = '';
+    this.lastErrorAt = 0;
   }
 
   showSuccess(message, duration = 4000) {
@@ -21,7 +24,16 @@ export class NotificationManager {
   }
 
   showError(message, duration = 5000) {
-    this._createToast(message, 'error', duration);
+    const now = Date.now();
+
+    // Avoid stacking the same error when one action triggers it repeatedly.
+    if (this.lastErrorToast && this.lastErrorMessage === message && now - this.lastErrorAt < 2000) {
+      return;
+    }
+
+    this.lastErrorToast = this._createToast(message, 'error', duration);
+    this.lastErrorMessage = message;
+    this.lastErrorAt = now;
   }
 
   showInfo(message, duration = 4000) {

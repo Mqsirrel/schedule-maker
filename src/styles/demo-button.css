@@ -1,0 +1,4 @@
+/* Keep the demo action text-only. This avoids changing the HTML structure. */
+#btnLoadDemo > svg {
+  display: none;
+}
