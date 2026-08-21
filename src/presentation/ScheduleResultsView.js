@@ -1,9 +1,8 @@
 export class ScheduleResultsView {
-  constructor({ state, calendarGrid, tableView, storageService, elements }) {
+  constructor({ state, calendarGrid, tableView, elements }) {
     this.state = state;
     this.calendarGrid = calendarGrid;
     this.tableView = tableView;
-    this.storageService = storageService;
     Object.assign(this, elements);
   }
 
@@ -36,7 +35,6 @@ export class ScheduleResultsView {
 
     this.valDaysOff.textContent = current.metrics.daysOffCount;
     this.valTotalGaps.textContent = `${current.metrics.totalGapHours}h`;
-    this.btnBookmark.classList.toggle('bookmarked', this.storageService.isBookmarked(current.id));
 
     if (this.state.get('currentView') === 'calendar') this.calendarGrid.renderSchedule(current);
     else this.tableView.renderSchedule(current);
