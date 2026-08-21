@@ -12,6 +12,7 @@ import { AppState } from './AppState.js';
 import { ScheduleController } from './ScheduleController.js';
 import { ScheduleActions } from './ScheduleActions.js';
 import { storageService } from '../services/storageService.js';
+import { exportService } from '../services/exportService.js';
 import { ScheduleResultsView } from '../presentation/ScheduleResultsView.js';
 import { ScheduleDiagnosticsView } from '../presentation/ScheduleDiagnosticsView.js';
 import { CourseDetailView } from '../presentation/CourseDetailView.js';
@@ -33,7 +34,7 @@ export class ScheduleMakerApp {
     this.filterBar = new FilterBar({ onFilterChange: f => this.applyFilters(f) });
     this.scheduleController = new ScheduleController({ state: this.state, getFilterState: () => this.filterBar.getFilterState() });
     this._initDOMElements();
-    this.scheduleActions = new ScheduleActions({ state: this.state, storageService, exportService: this.exportService, notification: this.notification, translate: t });
+    this.scheduleActions = new ScheduleActions({ state: this.state, storageService, exportService, notification: this.notification, translate: t });
     this.resultsView = new ScheduleResultsView({ state: this.state, calendarGrid: this.calendarGrid, tableView: this.tableView, storageService, elements: {
       resultsToolbar: this.resultsToolbar, resultsPlaceholder: this.resultsPlaceholder, calendarViewContainer: this.calendarViewContainer, tableViewContainer: this.tableViewContainer,
       btnViewCalendar: this.btnViewCalendar, btnViewTable: this.btnViewTable, btnPrevSchedule: this.btnPrevSchedule, btnNextSchedule: this.btnNextSchedule,
