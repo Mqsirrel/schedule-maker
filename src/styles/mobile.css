@@ -85,7 +85,7 @@
   .calendar-header-row, .calendar-body-matrix { min-width: 760px; }
   .calendar-header-row,
   .calendar-body-matrix { grid-template-columns: 64px repeat(5, minmax(140px, 1fr)); }
-  .course-block { left: 3px; right: 3px; }
+  .course-block { inset-inline: 3px; }
 }
 
 /* Shared touch behavior */
@@ -149,9 +149,9 @@
   }
 
   .top-banner {
-    margin-bottom: 10px;
-    padding: 14px;
-    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 16px 2px 14px;
+    border-radius: 0;
   }
 
   .banner-content { display: block; }
@@ -176,7 +176,7 @@
     width: 100%;
   }
 
-  .sidebar-panel, .results-toolbar, .calendar-card, .placeholder-card { border-radius: 16px; }
+  .sidebar-panel, .results-toolbar, .calendar-card, .placeholder-card { border-radius: var(--radius-md); }
 
   .sidebar-panel {
     width: 100%;
@@ -265,10 +265,9 @@
   .hour-marker { font-size: .68rem; }
 
   .course-block {
-    left: 3px;
-    right: 3px;
-    padding: 6px 7px;
-    border-radius: 10px;
+    inset-inline: 3px;
+    padding: 6px 7px 6px 9px;
+    border-radius: var(--radius-sm);
   }
 
   .course-block-title { font-size: .78rem; }

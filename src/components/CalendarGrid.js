@@ -249,7 +249,7 @@ export class CalendarGrid {
         blocksHtml += `
           <div class="course-block"
                data-section-id="${this._escapeHtml(section.id)}"
-               style="top: ${top}px; height: ${height}px; background-color: ${bgColor};"
+               style="top: ${top}px; height: ${height}px; --block-bg: ${bgColor};"
                title="${this._escapeHtml(section.courseName)} - ${this._escapeHtml(section.instructor)}">
             <div class="course-block-title">${this._escapeHtml(section.courseName)}</div>
             <div class="course-block-code">${this._escapeHtml(section.courseKey)}</div>
