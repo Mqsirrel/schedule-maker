@@ -4,10 +4,20 @@ export class NotificationManager {
   constructor() {
     this.container = document.getElementById('toastContainer');
     this.audio = document.getElementById('audioChime');
+    this.lastSuccessToast = null;
+    this.lastSuccessAt = 0;
   }
 
   showSuccess(message, duration = 4000) {
-    this._createToast(message, 'success', duration);
+    const now = Date.now();
+
+    // Avoid stacking multiple success messages from one user action.
+    if (this.lastSuccessToast && now - this.lastSuccessAt < 2000) {
+      this._dismissToast(this.lastSuccessToast);
+    }
+
+    this.lastSuccessToast = this._createToast(message, 'success', duration);
+    this.lastSuccessAt = now;
   }
 
   showError(message, duration = 5000) {
@@ -20,14 +30,13 @@ export class NotificationManager {
 
   playChime() {
     try {
-      // Synthesize a gentle pleasant chime using Web Audio API (Zero external audio file dependency!)
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
 
       gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
@@ -43,7 +52,7 @@ export class NotificationManager {
   }
 
   _createToast(message, type = 'info', duration = 4000) {
-    if (!this.container) return;
+    if (!this.container) return null;
 
     const toast = document.createElement('div');
     toast.className = `toast toast--${type}`;
@@ -64,26 +73,23 @@ export class NotificationManager {
     `;
 
     const closeBtn = toast.querySelector('.toast-close');
-    closeBtn.addEventListener('click', () => {
-      this._dismissToast(toast);
-    });
+    closeBtn.addEventListener('click', () => this._dismissToast(toast));
 
     this.container.appendChild(toast);
 
     if (duration > 0) {
-      setTimeout(() => {
-        this._dismissToast(toast);
-      }, duration);
+      setTimeout(() => this._dismissToast(toast), duration);
     }
+
+    return toast;
   }
 
   _dismissToast(toast) {
+    if (!toast) return;
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(12px) scale(0.95)';
     setTimeout(() => {
-      if (toast.parentElement) {
-        toast.parentElement.removeChild(toast);
-      }
+      if (toast.parentElement) toast.parentElement.removeChild(toast);
     }, 300);
   }
 
