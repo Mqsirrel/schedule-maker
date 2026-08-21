@@ -19,8 +19,9 @@ test('ScheduleController.filter owns filtered schedule state', () => {
   state.setGeneratedSchedules(schedules);
 
   const controller = makeController(state);
-  const result = controller.filter({ minScore: 80 });
+  const result = controller.filter({ daysOff: '2_off' });
 
-  assert.deepEqual(result, schedules);
-  assert.equal(state.get('filteredSchedules').length, 2);
+  assert.deepEqual(result, [schedules[0]]);
+  assert.deepEqual(state.get('filteredSchedules'), [schedules[0]]);
+  assert.equal(state.get('currentScheduleIndex'), 0);
 });
