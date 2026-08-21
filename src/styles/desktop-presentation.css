@@ -1,0 +1,90 @@
+/* Desktop presentation layer: layout only. No scheduling/state behavior lives here. */
+@media (min-width: 1280px) {
+  .app-layout {
+    width: min(100%, 1480px);
+    margin-inline: auto;
+    padding-inline: clamp(24px, 3vw, 48px);
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(18px, 2vw, 28px);
+  }
+
+  .sidebar-panel {
+    position: sticky;
+    top: 88px;
+    max-height: calc(100dvh - 104px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .results-content,
+  .schedule-view-wrapper {
+    min-width: 0;
+  }
+
+  .calendar-card {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .app-layout {
+    width: 100%;
+    max-width: none;
+    padding-inline: clamp(18px, 2.5vw, 32px);
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(290px, 330px) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .sidebar-panel {
+    position: sticky;
+    top: 82px;
+    max-height: calc(100dvh - 98px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .banner-content {
+    align-items: flex-start;
+  }
+
+  .banner-actions {
+    flex-shrink: 0;
+  }
+
+  .results-toolbar {
+    min-width: 0;
+  }
+
+  .calendar-card {
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Keep desktop controls visually stable instead of allowing text wrapping to
+     change the workspace height when Arabic/English is switched. */
+  .header-container,
+  .banner-content,
+  .results-toolbar {
+    min-width: 0;
+  }
+
+  .header-actions,
+  .banner-actions,
+  .schedule-pagination,
+  .export-actions {
+    flex-shrink: 0;
+  }
+}
