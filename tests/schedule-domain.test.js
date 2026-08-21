@@ -14,7 +14,7 @@ test('Schedule.from preserves the existing schedule shape', () => {
   assert.deepEqual(model.sections, raw.sections);
   assert.deepEqual(model.metrics, raw.metrics);
   assert.equal(model.id, 'sched_1');
-  assert.deepEqual(model.toJSON(), model);
+  assert.deepEqual(model.toJSON(), raw);
 });
 
 test('Schedule.from is idempotent', () => {
