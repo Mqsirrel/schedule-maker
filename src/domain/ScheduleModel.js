@@ -5,14 +5,18 @@
 export class ScheduleModel {
   constructor(data = {}) {
     Object.assign(this, data);
+
+    // Keep the existing public schedule shape writable. The previous
+    // implementation exposed `sections` and `metrics` as getters, which made
+    // Object.assign() fail as soon as a raw schedule contained those fields.
+    if (this.sections === undefined) this.sections = this.courses ?? [];
+    if (this.metrics === undefined) this.metrics = {};
   }
 
   static from(data) {
     return data instanceof ScheduleModel ? data : new ScheduleModel(data);
   }
 
-  get sections() { return this._sections ?? this.courses ?? []; }
-  get metrics() { return this._metrics ?? {}; }
   get identity() {
     return this.sections
       .map(section => `${section.courseKey || ''}::${section.section || ''}`)
@@ -21,6 +25,7 @@ export class ScheduleModel {
   }
 
   hasSections() { return this.sections.length > 0; }
+
   toJSON() { return { ...this }; }
 }
 
