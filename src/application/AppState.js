@@ -11,9 +11,7 @@ export class AppState {
     };
   }
 
-  get(key) {
-    return this._state[key];
-  }
+  get(key) { return this._state[key]; }
 
   set(key, value) {
     this._state[key] = value;
@@ -21,28 +19,15 @@ export class AppState {
     return value;
   }
 
-  patch(values) {
-    Object.assign(this._state, values);
-  }
-
-  snapshot() {
-    return { ...this._state };
-  }
+  patch(values) { Object.assign(this._state, values); }
+  snapshot() { return { ...this._state }; }
 
   resetResults() {
-    this.patch({
-      allGeneratedSchedules: [],
-      filteredSchedules: [],
-      currentScheduleIndex: 0
-    });
+    this.patch({ allGeneratedSchedules: [], filteredSchedules: [], currentScheduleIndex: 0 });
   }
 
   setGeneratedSchedules(schedules) {
-    this.patch({
-      allGeneratedSchedules: schedules,
-      filteredSchedules: schedules,
-      currentScheduleIndex: 0
-    });
+    this.patch({ allGeneratedSchedules: schedules, filteredSchedules: schedules, currentScheduleIndex: 0 });
   }
 
   setFilteredSchedules(schedules) {
@@ -51,14 +36,11 @@ export class AppState {
 
   navigateSchedule(delta) {
     const schedules = this.get('filteredSchedules');
-    const current = this.get('currentScheduleIndex');
-    const next = current + delta;
-
+    const next = this.get('currentScheduleIndex') + delta;
     if (next >= 0 && next < schedules.length) {
       this.set('currentScheduleIndex', next);
       return true;
     }
-
     return false;
   }
 
