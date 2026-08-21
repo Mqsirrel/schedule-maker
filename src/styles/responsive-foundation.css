@@ -6,6 +6,10 @@
 /* Removed actions stay out of the presentation while legacy storage/export code can remain isolated. */
 #btnBookmarkSchedule, #btnExportIcs { display: none !important; }
 
+/* Quick demo is text-only: no reserved icon space. */
+#btnLoadDemo svg { display: none; }
+#btnLoadDemo { gap: 0; }
+
 /* Desktop is the default presentation for everything above the phone breakpoint. */
 @media (min-width: 641px) {
   .app-layout { padding-inline: clamp(14px, 2vw, 24px); }
@@ -25,7 +29,6 @@
   .top-banner { padding: 16px; }
   .banner-content, .banner-actions { width: 100%; }
   .banner-actions { display: grid; grid-template-columns: 1fr; }
-  #btnLoadDemo svg { display: none; }
   .banner-text h2 { font-size: 1.15rem; }
   .banner-text p { font-size: .85rem; }
   .form-row, .form-inputs-row { grid-template-columns: 1fr; }
