@@ -6,6 +6,6 @@ export const exportService = {
     return IcsExporter.exportSchedule(schedule, options);
   },
   image(element, filename = 'Taibah_Schedule.png') {
-    return ImageExporter.exportElement(element, filename);
+    return ImageExporter.exportToPng(element, filename);
   }
 };
