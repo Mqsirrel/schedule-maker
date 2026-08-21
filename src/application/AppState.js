@@ -17,6 +17,7 @@ export class AppState {
 
   set(key, value) {
     this._state[key] = value;
+    if (key === 'filteredSchedules') this._state.currentScheduleIndex = 0;
     return value;
   }
 
