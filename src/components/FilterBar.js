@@ -9,29 +9,29 @@ export class FilterBar {
     this.searchDoctorSection = document.getElementById('searchDoctorSection');
     this.chkShowFullSeats = document.getElementById('chkShowFullSections');
 
-    // Keep the underlying controls for compatibility, but remove them from
-    // the UI to keep the results toolbar compact and focused.
+    // Keep the underlying controls for compatibility, but remove controls
+    // that are not useful in the compact results UI.
     this.filterDaysOff?.closest('.filter-group')?.remove();
     this.sortResultsBy?.closest('.filter-group')?.remove();
+    this.searchDoctorSection?.closest('.filter-group')?.remove();
+
+    // Favorites had no dedicated way to browse/restore saved schedules,
+    // so remove the action rather than exposing a misleading button.
+    document.getElementById('btnBookmarkSchedule')?.remove();
 
     this._bindEvents();
   }
 
   _bindEvents() {
     const triggerChange = () => this.onFilterChange(this.getFilterState());
-    const debouncedSearch = this._debounce(triggerChange, 200);
-
     this.chkShowFullSeats?.addEventListener('change', triggerChange);
-    this.searchDoctorSection?.addEventListener('input', debouncedSearch);
   }
 
   getFilterState() {
     return {
-      // These remain as neutral defaults so the existing filtering pipeline
-      // continues to work without exposing the controls in the UI.
       daysOff: 'all',
       sortBy: 'default',
-      query: this.searchDoctorSection?.value.trim().toLowerCase() || '',
+      query: '',
       allowFullSeats: this.chkShowFullSeats?.checked || false
     };
   }
