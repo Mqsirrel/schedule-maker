@@ -1,0 +1,54 @@
+/* Focused mobile presentation layer. Scheduling and state remain untouched. */
+@media (max-width: 640px) {
+  body {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
+  /* Keep the primary generation action reachable after a long course list. */
+  .sidebar-footer {
+    position: sticky;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 70;
+    margin-inline: -4px;
+    padding: 8px 4px;
+    background: color-mix(in srgb, var(--color-bg-surface) 94%, transparent);
+    border-top: 1px solid var(--color-border);
+    border-radius: 12px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .sidebar-footer .btn {
+    min-height: 48px;
+  }
+
+  /* Once results exist, keep the filter/navigation controls available while
+     the user explores a long schedule. */
+  .results-toolbar {
+    position: sticky;
+    top: 56px;
+    z-index: 60;
+    max-height: min(70vh, 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .results-content,
+  .schedule-view-wrapper {
+    scroll-margin-top: 68px;
+  }
+}
+
+@media (max-width: 380px) {
+  .sidebar-footer .btn {
+    min-height: 50px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-footer,
+  .results-toolbar {
+    scroll-behavior: auto;
+  }
+}
