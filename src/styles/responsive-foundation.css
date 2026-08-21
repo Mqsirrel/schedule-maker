@@ -3,19 +3,13 @@
 .app-layout { width: min(100%, 1480px); margin-inline: auto; box-sizing: border-box; }
 .workspace-grid > *, .results-panel, .sidebar-panel, .calendar-view-container, .table-view-container { min-width: 0; }
 
-@media (min-width: 1101px) {
+/* Desktop is the default presentation for everything above the phone breakpoint. */
+@media (min-width: 641px) {
+  .app-layout { padding-inline: clamp(14px, 2vw, 24px); }
   .workspace-grid { grid-template-columns: minmax(320px, 360px) minmax(0, 1fr); gap: 24px; }
   .sidebar-panel { position: sticky; top: 5.5rem; max-height: calc(100vh - 6.25rem); overflow-y: auto; scrollbar-gutter: stable; }
   .results-panel { width: 100%; min-width: 0; }
-}
-
-@media (min-width: 641px) and (max-width: 1100px) {
-  .app-layout { padding-inline: clamp(14px, 3vw, 24px); }
-  .workspace-grid { grid-template-columns: 1fr; gap: 16px; }
-  .sidebar-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-  .results-panel { width: 100%; }
-  .selected-courses-container { max-height: 280px; }
-  .search-filter { min-width: 240px; }
+  .mobile-calendar-view { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -42,7 +36,7 @@
   .course-card-item, .course-item-info, .course-item-title, .course-item-tags { min-width: 0; }
   .course-item-title { overflow-wrap: anywhere; }
 
-  /* On phones, the calendar component already renders a compact day-by-day agenda. */
+  /* CalendarGrid already owns a compact agenda renderer; phones use it instead of shrinking the desktop grid. */
   .desktop-calendar-grid { display: none; }
   .mobile-calendar-view { display: block; width: 100%; }
   .mobile-calendar-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
@@ -71,8 +65,6 @@
   #scheduleDetailTable { min-width: 620px; }
   .app-modal { max-height: calc(100dvh - 12px); overflow-y: auto; }
 }
-
-@media (min-width: 641px) { .mobile-calendar-view { display: none; } }
 
 @supports (padding: max(0px)) {
   @media (max-width: 640px) {
