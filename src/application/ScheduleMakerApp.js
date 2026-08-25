@@ -84,7 +84,7 @@ export class ScheduleMakerApp {
 
   loadDemoDataset(){
     this.courseSelector.clearAll(); this.onTimetableLoaded(getSampleSections());
-    setTimeout(()=>{ const code=document.getElementById('courseCode'),number=document.getElementById('courseNumber'); for(const[c,n]of [['CS','181'],['MATH','101'],['PHYS','101'],['EXP','901'],['EXP','902'],['EXP','903']]){code.value=c;number.value=n;this.courseSelector.addCurrentCourse();} this.notification.showSuccess(getLang()==='ar'?'تم تحميل بيانات تجريبية، ويتم الآن إنشاء جدول مناسب.':'Sample data loaded. Building a schedule now.'); this.generateSchedules(); },150);
+    setTimeout(()=>{ const code=document.getElementById('courseCode'),number=document.getElementById('courseNumber'); for(const[c,n]of [['CS','181'],['MATH','101'],['PHYS','101']]){code.value=c;number.value=n;this.courseSelector.addCurrentCourse();} this.notification.showSuccess(getLang()==='ar'?'تم تحميل بيانات تجريبية، ويتم الآن إنشاء جدول مناسب.':'Sample data loaded. Building a schedule now.'); this.generateSchedules(); },150);
   }
   onWantedCoursesChanged(groups){this.wantedCourseGroups=groups;if(!groups.length){this.state.resetResults();this.resultsView.updateVisibility();}}
   async generateSchedules(){if(!this.wantedCourseGroups.length)return;const result=await this.scheduleController.generate(this.wantedCourseGroups);if(!result.schedules.length){this.notification.showError(t('toast_no_schedules_found'));this.diagnosticsView.render(this.scheduleController.diagnoseConflicts(this.wantedCourseGroups));this.resultsView.updateVisibility();return;}this.diagnosticsView.render([]);this.notification.playChime();this.notification.showSuccess(t('toast_schedules_found',{count:result.schedules.length}));this.applyFilters(result.filters);}
