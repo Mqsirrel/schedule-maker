@@ -37,11 +37,6 @@ export const SAMPLE_TAIBAH_HTML = `
       <!-- CS 212: Data Structures -->
       <tr><td>19</td><td>25</td><td></td><td>08:00-09:50</td><td></td><td>08:00-09:50</td><td></td><td>د. رامي الحربي</td><td>10</td><td>تراكيب البيانات</td><td>212</td><td>CS</td><td>المدينة</td><td>115</td></tr>
       <tr><td>22</td><td>25</td><td>12:00-13:50</td><td></td><td>12:00-13:50</td><td></td><td></td><td>د. رامي الحربي</td><td>20</td><td>تراكيب البيانات</td><td>212</td><td>CS</td><td>المدينة</td><td>116</td></tr>
-
-      <!-- Experimental subjects -->
-      <tr><td>18</td><td>30</td><td></td><td>08:00-09:50</td><td></td><td>08:00-09:50</td><td></td><td>د. تجريبي</td><td>30</td><td>المادة السيمباوية</td><td>901</td><td>EXP</td><td>المدينة</td><td>117</td></tr>
-      <tr><td>21</td><td>30</td><td></td><td>10:00-11:50</td><td></td><td>10:00-11:50</td><td></td><td>د. تجريبي</td><td>31</td><td>المادة الكلباشية</td><td>902</td><td>EXP</td><td>المدينة</td><td>118</td></tr>
-      <tr><td>16</td><td>30</td><td>12:00-13:50</td><td></td><td>12:00-13:50</td><td></td><td></td><td>د. تجريبي</td><td>32</td><td>السمباسيه</td><td>903</td><td>EXP</td><td>المدينة</td><td>119</td></tr>
     </tbody>
   </table>
 </body>
